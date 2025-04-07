@@ -18,6 +18,7 @@ object GoogleAuthUIClient {
             .build()
 
         val googleSignInClient = GoogleSignIn.getClient(context, gso)
+        googleSignInClient.signOut()
         return googleSignInClient.signInIntent
     }
 

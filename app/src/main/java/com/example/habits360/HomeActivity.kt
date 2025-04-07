@@ -18,8 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import com.example.habits360.ui.theme.Habits360Theme
+import com.example.habits360.utils.logout
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 
 class HomeActivity : ComponentActivity() {
@@ -27,7 +30,16 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Habits360Theme {
-                HomeScreen()
+                HomeScreen(
+                    onLogout = {
+                        lifecycleScope.launch {
+                            logout(this@HomeActivity)
+                            startActivity(Intent(this@HomeActivity, MainActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            })
+                        }
+                    }
+                )
             }
         }
     }
@@ -35,7 +47,7 @@ class HomeActivity : ComponentActivity() {
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onLogout: () -> Unit) {
     val context = LocalContext.current
 
     Column(
