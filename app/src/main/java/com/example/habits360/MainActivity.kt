@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.habits360.googleAuth.GoogleAuthUIClient
+import com.example.habits360.profile.FirebaseRepository
+import com.example.habits360.profile.ProfileSetupActivity
 import com.example.habits360.ui.theme.Habits360Theme
 import kotlinx.coroutines.launch
 
@@ -54,14 +56,25 @@ fun PantallaLogin() {
         if (result.resultCode == Activity.RESULT_OK) {
             scope.launch {
                 val user = GoogleAuthUIClient.handleSignInResult(result.data)
+
                 if (user != null) {
-                    context.startActivity(Intent(context, HomeActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    })
-            } else {
+                    // Verificar si tiene perfil cargado en Firestore
+                    val repo = FirebaseRepository()
+                    val hasProfile = repo.isUserProfileComplete()
+
+                    if (hasProfile) {
+                        context.startActivity(Intent(context, HomeActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        })
+                    } else {
+                        context.startActivity(Intent(context, ProfileSetupActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        })
+                    }
+                } else {
                     userName = "Login fallido"
                 }
-                }
+            }
         } else {
             userName = "Login cancelado"
         }
@@ -85,12 +98,11 @@ fun PantallaLogin() {
                 Text("Login con Google")
             }
 
-            if (userName.isNotEmpty()) {
-                Text("¡Hola, $userName! 👋")
-            }
+            Text(userName)
         }
     }
 }
+
 
 
 
