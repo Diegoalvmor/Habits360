@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "637237112740",
+    "project_id": "habits-360",
+    "storage_bucket": "habits-360.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:637237112740:android:9a989f7376d0e85407db31",
+        "android_client_info": {
+          "package_name": "com.example.habits360"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "637237112740-3h90krcsb0sbu8i9rbq6tuslld5fmr5k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.habits360",
+            "certificate_hash": "225a812dc850fb8d8944851c260a569e4eb21075"
+          }
+        },
+        {
+          "client_id": "637237112740-eaubivmvppp7ng1vr2em5fklcf0b19do.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAdynBvj4QmkDa40foeWeszgs7K7Q-VHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "637237112740-eaubivmvppp7ng1vr2em5fklcf0b19do.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

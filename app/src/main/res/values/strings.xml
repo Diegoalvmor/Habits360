@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Habits360</string>
+
+    <string name="client_id">637237112740-eaubivmvppp7ng1vr2em5fklcf0b19do.apps.googleusercontent.com</string>
 </resources>
