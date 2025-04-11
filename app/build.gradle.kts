@@ -60,7 +60,22 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.play.services.auth.v2100)
 
+
+    // GSON (para convertir JSON <-> objetos)
+    implementation(libs.gson)
+
+    // OkHttp (cliente HTTP)
+    implementation(libs.okhttp)
+
+
+    // Coroutines para poder usar `.await()`
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+
+    //Firebase
     implementation(libs.firebase.auth.ktx)
     implementation(libs.play.services.auth)
     implementation(libs.firebase.firestore.ktx)

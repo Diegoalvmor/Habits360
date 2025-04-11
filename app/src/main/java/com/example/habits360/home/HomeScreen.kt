@@ -1,9 +1,5 @@
-package com.example.habits360
+package com.example.habits360.home
 
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,26 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.habits360.habits.HabitsApiService
 import com.example.habits360.models.Habit
-import com.example.habits360.ui.theme.Habits360Theme
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-
-
-class HomeActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Habits360Theme {
-
-                HomeScreen()
-
-
-            }
-        }
-    }
-}
-
 
 @Composable
 fun HomeScreen() {
@@ -127,13 +106,7 @@ fun HomeScreen() {
                         frequency = frequency,
                         createdAt = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
                     )
-                    val habitCreado = api.postHabit(nuevo)
-
-                    if (habitCreado != null) {
-                        Log.d("Habits", "Hábito creado con ID: ${habitCreado.id}")
-                        // podés usar habitCreado.id como necesites
-                    }
-
+                    api.postHabit(nuevo)
                     title = ""
                     description = ""
                     loadHabits()
@@ -143,7 +116,6 @@ fun HomeScreen() {
         ) {
             Text("Crear Hábito")
         }
-
     }
 }
 
@@ -171,75 +143,3 @@ fun DropdownMenuBox(
         }
     }
 }
-
-
-
-
-/*
-
-HomeScreen(
-                    onLogout = {
-                        lifecycleScope.launch {
-                            logout(this@HomeActivity)
-                            startActivity(Intent(this@HomeActivity, MainActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            })
-                        }
-                    }
-                )
-
-
-@Composable
-fun HomeScreen(onLogout: () -> Unit) {
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Bienvenido a Habits360 💪", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(onClick = {
-            obtenerIdToken()
-        }) {
-            Text("Obtener Id token")
-        }
-
-        Button(onClick = {
-            FirebaseAuth.getInstance().signOut()
-            context.startActivity(Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
-        }) {
-            Text("Cerrar sesión")
-        }
-    }
-}
-fun obtenerIdToken() {
-    val user = FirebaseAuth.getInstance().currentUser
-    if (user != null) {
-        // Obtener el ID token
-        user.getIdToken(true)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // El ID token fue recuperado con éxito
-                    val idToken = task.result?.token
-                    Log.d("IDToken", "ID Token: $idToken")
-                    println("ID Token: $idToken")
-
-                } else {
-                    // Error al obtener el ID token
-                    println("Error al obtener el ID token: ${task.exception?.message}")
-                }
-            }
-    } else {
-        println("No hay un usuario autenticado.")
-    }
-}
-*/
-
