@@ -27,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.habits360.googleAuth.GoogleAuthUIClient
-import com.example.habits360.profile.FirebaseRepository
-import com.example.habits360.profile.ProfileSetupActivity
+import com.example.habits360.features.profile.FirebaseRepository
+import com.example.habits360.features.profile.ProfileSetupActivity
 import com.example.habits360.ui.theme.Habits360Theme
 import kotlinx.coroutines.launch
 

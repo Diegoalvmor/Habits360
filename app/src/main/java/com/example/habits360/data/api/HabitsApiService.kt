@@ -1,6 +1,6 @@
-package com.example.habits360.habits
+package com.example.habits360.data.api
 import android.util.Log
-import com.example.habits360.models.Habit
+import com.example.habits360.features.habits.model.Habit
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.JsonParser

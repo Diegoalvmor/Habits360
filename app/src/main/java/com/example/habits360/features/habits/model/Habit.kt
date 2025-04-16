@@ -1,4 +1,4 @@
-package com.example.habits360.models
+package com.example.habits360.features.habits.model
 
 data class Habit(
     val id: String? = null,
@@ -6,6 +6,6 @@ data class Habit(
     val title: String = "",
     val description: String = "",
     val category: String = "",   // Agua, Dormir, Ejercicio, Mental
-    val frequency: String = "",  // daily, weekly...
+    val frequency: String = "",  // Diariamente, Semanalmente...
     val createdAt: String = ""   // ISO 8601
 )

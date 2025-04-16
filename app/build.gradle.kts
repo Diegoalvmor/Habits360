@@ -62,8 +62,18 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.auth.v2100)
 
+    // Navigation for Jetpack Compose
+    implementation(libs.androidx.navigation.compose)
+    // Iconos extra de Material3
+    implementation(libs.androidx.material.icons.extended)
 
-    // GSON (para convertir JSON <-> objetos)
+    //MPAndroidChart para los Gráficos
+    implementation(libs.mpandroidchart.vv310)
+
+
+
+
+    // GSON (para convertir JSON <-> objetos) También podríamos hacerlo con retrofit.
     implementation(libs.gson)
 
     // OkHttp (cliente HTTP)

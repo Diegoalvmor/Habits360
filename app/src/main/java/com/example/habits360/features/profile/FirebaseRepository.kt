@@ -1,6 +1,6 @@
-package com.example.habits360.profile
+package com.example.habits360.features.profile
 
-import com.example.habits360.profile.model.UserProfile
+import com.example.habits360.features.profile.model.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -10,9 +10,9 @@ class FirebaseRepository {
     private val auth = FirebaseAuth.getInstance()
 
     suspend fun saveUserProfile(profile: UserProfile): Boolean {
-        val uid = auth.currentUser?.uid ?: return false
+        if (profile.userId.isBlank()) return false
         return try {
-            db.collection("users").document(uid).collection("profile").document("data")
+            db.collection("users").document(profile.userId).collection("Profile").document("data")
                 .set(profile).await()
             true
         } catch (e: Exception) {
@@ -23,7 +23,7 @@ class FirebaseRepository {
     suspend fun getUserProfile(): UserProfile? {
         val uid = auth.currentUser?.uid ?: return null
         return try {
-            db.collection("users").document(uid).collection("profile").document("data")
+            db.collection("users").document(uid).collection("Profile").document("data")
                 .get().await().toObject(UserProfile::class.java)
         } catch (e: Exception) {
             null
@@ -34,7 +34,7 @@ class FirebaseRepository {
         val uid = auth.currentUser?.uid ?: return false
         return try {
             val doc = db.collection("users").document(uid)
-                .collection("profile").document("data")
+                .collection("Profile").document("data")
                 .get().await()
             doc.exists()
         } catch (e: Exception) {

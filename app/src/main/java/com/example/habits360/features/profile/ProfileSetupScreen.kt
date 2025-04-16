@@ -1,4 +1,4 @@
-package com.example.habits360.profile
+package com.example.habits360.features.profile
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +32,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.habits360.HomeActivity
-import com.example.habits360.profile.model.UserProfile
+import com.example.habits360.features.profile.model.UserProfile
+import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
@@ -49,13 +50,14 @@ fun ProfileSetupScreen (viewModel: ProfileViewModel = ProfileViewModel()) {
     val saveSuccess by viewModel.saveSuccess.collectAsState()
 
     if (saveSuccess) {
-        // Navega a HomeActivity después de guardar
+        // Navegamos a HomeActivity después de guardar
         LaunchedEffect(Unit) {
             context.startActivity(
                 Intent(context, HomeActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
             )
+
         }
     }
 
@@ -111,13 +113,16 @@ fun ProfileSetupScreen (viewModel: ProfileViewModel = ProfileViewModel()) {
 
         Button(
             onClick = {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
                 val profile = UserProfile(
+                    userId = uid,
                     age = age.toIntOrNull() ?: 0,
                     weight = weight.toFloatOrNull() ?: 0f,
                     height = height.toFloatOrNull() ?: 0f,
                     gender = gender,
                     goal = goal
                 )
+
                 viewModel.saveProfile(profile)
             },
             modifier = Modifier.fillMaxWidth()

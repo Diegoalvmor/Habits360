@@ -1,42 +1,15 @@
 package com.example.habits360
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.example.habits360.habits.HabitsApiService
-import com.example.habits360.models.Habit
+import androidx.navigation.compose.rememberNavController
+import com.example.habits360.ui.navigation.BottomNavBar
+import com.example.habits360.ui.navigation.NavGraph
 import com.example.habits360.ui.theme.Habits360Theme
-import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 
 
 class HomeActivity : ComponentActivity() {
@@ -44,16 +17,21 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Habits360Theme {
+                val navController = rememberNavController()
 
-                HomeScreen()
-
-
+                Scaffold(
+                    bottomBar = {
+                        BottomNavBar(navController)
+                    }
+                ) { padding ->
+                    NavGraph(navController = navController, modifier = Modifier.padding(padding))
+                }
             }
         }
     }
 }
 
-
+/*
 @Composable
 fun HomeScreen() {
     val scope = rememberCoroutineScope()
@@ -112,7 +90,7 @@ fun HomeScreen() {
                 category = selected
             }
             Spacer(Modifier.width(8.dp))
-            DropdownMenuBox(frequency, listOf("daily", "weekly")) { selected ->
+            DropdownMenuBox(frequency, listOf("Diariamente", "Semanalmente", "Mensualmente")) { selected ->
                 frequency = selected
             }
         }
@@ -143,6 +121,12 @@ fun HomeScreen() {
         ) {
             Text("Crear Hábito")
         }
+        Button(onClick = {
+            obtenerIdToken()
+        }) {
+            Text("Obtener Id token")
+        }
+
 
     }
 }
@@ -173,9 +157,31 @@ fun DropdownMenuBox(
 }
 
 
+fun obtenerIdToken() {
+    val user = FirebaseAuth.getInstance().currentUser
+    if (user != null) {
+        // Obtener el ID token
+        user.getIdToken(true)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // El ID token fue recuperado con éxito
+                    val idToken = task.result?.token
+                    Log.d("IDToken", "ID Token: $idToken")
+                    println("ID Token: $idToken")
+
+                } else {
+                    // Error al obtener el ID token
+                    println("Error al obtener el ID token: ${task.exception?.message}")
+                }
+            }
+    } else {
+        println("No hay un usuario autenticado.")
+    }
+}
 
 
-/*
+
+
 
 HomeScreen(
                     onLogout = {
@@ -218,27 +224,6 @@ fun HomeScreen(onLogout: () -> Unit) {
         }) {
             Text("Cerrar sesión")
         }
-    }
-}
-fun obtenerIdToken() {
-    val user = FirebaseAuth.getInstance().currentUser
-    if (user != null) {
-        // Obtener el ID token
-        user.getIdToken(true)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // El ID token fue recuperado con éxito
-                    val idToken = task.result?.token
-                    Log.d("IDToken", "ID Token: $idToken")
-                    println("ID Token: $idToken")
-
-                } else {
-                    // Error al obtener el ID token
-                    println("Error al obtener el ID token: ${task.exception?.message}")
-                }
-            }
-    } else {
-        println("No hay un usuario autenticado.")
     }
 }
 */

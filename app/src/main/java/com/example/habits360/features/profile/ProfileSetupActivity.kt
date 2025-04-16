@@ -1,4 +1,4 @@
-package com.example.habits360.profile
+package com.example.habits360.features.profile
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,7 +10,7 @@ class ProfileSetupActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Habits360Theme {
-                ProfileSetupScreen() // Ya lo tenías hecho antes
+                ProfileSetupScreen()
             }
         }
     }

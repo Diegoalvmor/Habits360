@@ -27,8 +27,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.habits360.habits.HabitsApiService
-import com.example.habits360.models.Habit
+import com.example.habits360.data.api.HabitsApiService
+import com.example.habits360.features.habits.model.Habit
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.format.DateTimeFormatter
