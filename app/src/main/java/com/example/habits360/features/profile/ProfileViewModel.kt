@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDate
+import java.time.Period
 
 class ProfileViewModel : ViewModel() {
     private val repository = FirebaseRepository()
@@ -31,10 +33,22 @@ class ProfileViewModel : ViewModel() {
             }
         }
     }
+    private fun calculateAge(birthdate: String): Int {
+        return try {
+            val birth = LocalDate.parse(birthdate)
+            val now = LocalDate.now()
+            Period.between(birth, now).years
+        } catch (e: Exception) {
+            0
+        }
+    }
+
 
     @SuppressLint("DefaultLocale")
     private suspend fun createAutoHabitsAndGoals(profile: UserProfile) {
         val userId = profile.userId
+        val age = calculateAge(profile.birthdate)
+
 
         // =======================
         // 1️⃣ HÁBITO DE AGUA
@@ -79,8 +93,8 @@ class ProfileViewModel : ViewModel() {
 
         // Base hours
         val baseHours = when {
-            profile.age < 18 -> 8.5f
-            profile.age in 18..64 -> 8f
+            age < 18 -> 8.5f
+            age in 18..64 -> 8f
             else -> 7f
         }
 
@@ -115,8 +129,6 @@ class ProfileViewModel : ViewModel() {
             goalsRepo.addGoal(goalSleep)
         }
     }
-
-
 
 
 
