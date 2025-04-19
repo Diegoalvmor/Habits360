@@ -1,5 +1,6 @@
 package com.example.habits360.data.api
 
+import android.util.Log
 import com.example.habits360.features.progress.model.Progress
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -56,10 +57,11 @@ class ProgressApiService {
     suspend fun isProgressCompletedToday(habitId: String): Boolean = withContext(Dispatchers.IO) {
         val token = getToken() ?: return@withContext false
         val today = LocalDate.now().toString()
+
         val url = HttpUrl.Builder()
             .scheme("https")
             .host("habits-api-637237112740.europe-southwest1.run.app")
-            .addPathSegments("progress/user")
+            .addPathSegments("progress/user")  // <- Endpoint correcto
             .addQueryParameter("habitId", habitId)
             .addQueryParameter("date", today)
             .build()
@@ -71,38 +73,73 @@ class ProgressApiService {
             .build()
 
         val response = client.newCall(request).execute()
-        if (!response.isSuccessful) return@withContext false
-
         val body = response.body?.string()
+
+        Log.d("ProgressAPI", "Response body: $body")
+
+        if (!response.isSuccessful || body.isNullOrBlank()) return@withContext false
+
         val listType = object : TypeToken<List<Progress>>() {}.type
         val progresses: List<Progress> = gson.fromJson(body, listType)
-        return@withContext progresses.firstOrNull()?.completed ?: false
+
+        return@withContext progresses.any { it.completed }
     }
+
+
 
     suspend fun toggleProgress(habitId: String) = withContext(Dispatchers.IO) {
         val token = getToken() ?: return@withContext
         val today = LocalDate.now().toString()
 
-        // Buscar si ya existe progreso
-        val existingCompleted = isProgressCompletedToday(habitId)
+        val url = HttpUrl.Builder()
+            .scheme("https")
+            .host("habits-api-637237112740.europe-southwest1.run.app")
+            .addPathSegments("progress/user")
+            .addQueryParameter("habitId", habitId)
+            .addQueryParameter("date", today)
+            .build()
 
-        // Aquí podrías obtener el ID del documento si lo devuelves, pero como alternativa simple:
-        val newProgress = Progress(
-            userId = Firebase.auth.currentUser?.uid ?: "",
-            habitId = habitId,
-            date = today,
-            completed = !existingCompleted
-        )
-
-        val json = gson.toJson(newProgress)
-        val body = json.toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("$baseUrl/progress")
-            .post(body)
+        val getRequest = Request.Builder()
+            .url(url)
             .addHeader("Authorization", "Bearer $token")
             .build()
 
-        client.newCall(request).execute().close()
+        val getResponse = client.newCall(getRequest).execute()
+        val body = getResponse.body?.string()
+        val listType = object : TypeToken<List<Progress>>() {}.type
+        val progresses: List<Progress> = gson.fromJson(body, listType)
+        val existing = progresses.firstOrNull()
+
+        if (existing?.id != null) {
+            // Hacemos un PUT para alternar el valor
+            val updated = existing.copy(completed = !existing.completed)
+            val json = gson.toJson(updated).toRequestBody("application/json".toMediaType())
+
+            val putRequest = Request.Builder()
+                .url("$baseUrl/progress/${existing.id}")
+                .put(json)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(putRequest).execute().close()
+        } else {
+            // No hay progreso todavía → creamos uno
+            val newProgress = Progress(
+                userId = Firebase.auth.currentUser?.uid ?: "",
+                habitId = habitId,
+                date = today,
+                completed = true
+            )
+            val json = gson.toJson(newProgress).toRequestBody("application/json".toMediaType())
+
+            val postRequest = Request.Builder()
+                .url("$baseUrl/progress")
+                .post(json)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(postRequest).execute().close()
+        }
     }
+
 }

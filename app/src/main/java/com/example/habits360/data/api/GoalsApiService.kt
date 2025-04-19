@@ -11,6 +11,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.time.LocalDate
 
 class GoalsApiService {
     private val baseUrl = "https://habits-api-637237112740.europe-southwest1.run.app"
@@ -58,4 +59,27 @@ class GoalsApiService {
             .build()
         client.newCall(request).execute().close()
     }
+
+    //Para sincorinzar el progreso al cumplir un Hábito
+    suspend fun updateProgressForHabit(habitId: String): Boolean = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext false
+        val today = LocalDate.now().toString()
+
+        val jsonObject = mapOf(
+            "habitId" to habitId,
+            "date" to today
+        )
+        val json = gson.toJson(jsonObject)
+        val requestBody = json.toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("$baseUrl/goals/update-progress")
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        val response = client.newCall(request).execute()
+        return@withContext response.isSuccessful
+    }
+
 }

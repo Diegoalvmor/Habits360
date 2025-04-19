@@ -1,5 +1,6 @@
 package com.example.habits360.features.goals
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,6 +40,8 @@ import com.google.firebase.auth.FirebaseAuth
 fun GoalsScreen(
     viewModel: GoalsViewModel = viewModel(),
     habitsViewModel: HabitsViewModel = viewModel(),
+    goalsViewModel: GoalsViewModel = viewModel()
+
 ) {
     val goals = viewModel.goals
     val habits = habitsViewModel.habits
@@ -52,6 +55,7 @@ fun GoalsScreen(
     LaunchedEffect(Unit) {
         viewModel.loadGoals()
         habitsViewModel.loadHabits()
+        habitsViewModel.attachGoalsViewModel(goalsViewModel)
     }
 
     Column(Modifier
@@ -59,7 +63,7 @@ fun GoalsScreen(
         .padding(16.dp)) {
 
         Text(
-            "🎯 Objetivos",
+            "Mis Objetivos",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -161,5 +165,31 @@ fun GoalsScreen(
         ) {
             Text("Crear objetivo")
         }
+        Button(onClick = {
+            obtenerIdToken()
+        }) {
+            Text("Obtener Id token")
+        }
+    }
+}
+fun obtenerIdToken() {
+    val user = FirebaseAuth.getInstance().currentUser
+    if (user != null) {
+        // Obtener el ID token
+        user.getIdToken(true)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // El ID token fue recuperado con éxito
+                    val idToken = task.result?.token
+                    Log.d("IDToken", "ID Token: $idToken")
+                    println("ID Token: $idToken")
+
+                } else {
+                    // Error al obtener el ID token
+                    println("Error al obtener el ID token: ${task.exception?.message}")
+                }
+            }
+    } else {
+        println("No hay un usuario autenticado.")
     }
 }

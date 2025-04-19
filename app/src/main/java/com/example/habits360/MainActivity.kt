@@ -99,7 +99,7 @@ fun PantallaLogin() {
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(200.dp)
                     .padding(bottom = 8.dp)
             )
 

@@ -7,8 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habits360.data.repository.GoalsRepository
 import com.example.habits360.features.goals.model.Goal
-import com.example.habits360.features.habits.model.Habit
-import com.example.habits360.features.profile.model.UserProfile
 import kotlinx.coroutines.launch
 
 class GoalsViewModel (private val repo: GoalsRepository = GoalsRepository()) : ViewModel() {
@@ -43,24 +41,16 @@ class GoalsViewModel (private val repo: GoalsRepository = GoalsRepository()) : V
         }
     }
 
-    fun addAutoGoalsFromProfile(profile: UserProfile, habitList: List<Habit>) {
+    //Para sincronizar el progreso al cumplir un Hábito
+    fun syncProgressForHabit(habitId: String) {
         viewModelScope.launch {
-            if (profile.goal == "mantener_salud") {
-                val aguaHabit = habitList.find { it.category == "Agua" }
-                if (aguaHabit != null) {
-                    val autoGoal = Goal(
-                        userId = profile.userId,
-                        title = "Beber agua diariamente por 7 días",
-                        habitId = aguaHabit.id ?: "",
-                        targetDays = 7,
-                        progress = 0,
-                        achieved = false
-                    )
-                    addGoal(autoGoal)
-                }
-            }
+            val updated = repo.updateProgressForHabit(habitId)
+            if (updated) loadGoals()
         }
     }
+
+
+
 
 
 

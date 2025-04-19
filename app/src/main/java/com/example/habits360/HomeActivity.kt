@@ -31,6 +31,8 @@ class HomeActivity : ComponentActivity() {
     }
 }
 
+
+
 /*
 @Composable
 fun HomeScreen() {
@@ -157,27 +159,7 @@ fun DropdownMenuBox(
 }
 
 
-fun obtenerIdToken() {
-    val user = FirebaseAuth.getInstance().currentUser
-    if (user != null) {
-        // Obtener el ID token
-        user.getIdToken(true)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // El ID token fue recuperado con éxito
-                    val idToken = task.result?.token
-                    Log.d("IDToken", "ID Token: $idToken")
-                    println("ID Token: $idToken")
 
-                } else {
-                    // Error al obtener el ID token
-                    println("Error al obtener el ID token: ${task.exception?.message}")
-                }
-            }
-    } else {
-        println("No hay un usuario autenticado.")
-    }
-}
 
 
 

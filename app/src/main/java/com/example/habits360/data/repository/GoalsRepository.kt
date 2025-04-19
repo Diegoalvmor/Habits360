@@ -7,5 +7,8 @@ class GoalsRepository (private val api: GoalsApiService = GoalsApiService()) {
     suspend fun getGoals() = api.getGoals()
     suspend fun addGoal(goal: Goal) = api.postGoal(goal)
     suspend fun deleteGoal(id: String) = api.deleteGoal(id)
+    suspend fun updateProgressForHabit(habitId: String): Boolean {
+        return api.updateProgressForHabit(habitId)
+    }
 
 }
