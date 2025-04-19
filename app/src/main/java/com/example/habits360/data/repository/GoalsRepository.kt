@@ -10,5 +10,7 @@ class GoalsRepository (private val api: GoalsApiService = GoalsApiService()) {
     suspend fun updateProgressForHabit(habitId: String): Boolean {
         return api.updateProgressForHabit(habitId)
     }
+    suspend fun markGoalAsCelebrated(id: String) = api.markGoalAsCelebrated(id)
+
 
 }

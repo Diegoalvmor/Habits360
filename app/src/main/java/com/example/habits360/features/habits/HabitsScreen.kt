@@ -80,17 +80,20 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
                     val isCompleted = viewModel.completionStatus[habit.id] ?: false
                     Log.d("HabitVisualState", "Habit ${habit.title} - ID: ${habit.id} -> isCompleted = $isCompleted")
 
+                    //para mostrar "Cargando..." mientras carga
+                    val isLoadingState = viewModel.loadingStatus.contains(habit.id)
+
                     HabitItem(
                         habit = habit,
                         isCompleted = isCompleted,
-                        onToggleComplete = {
-                            viewModel.toggleHabitCompletion(habit.id ?: "")
-                        },
+                        isLoading = isLoadingState,
+                        onToggleComplete = { viewModel.toggleHabitCompletion(habit.id ?: "") },
                         onDeleteRequest = {
                             habitToDelete = it
                             showDeleteDialog = true
                         }
                     )
+
 
                 }
             }

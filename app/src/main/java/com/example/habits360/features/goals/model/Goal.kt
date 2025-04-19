@@ -7,5 +7,7 @@ data class Goal(
     val habitId: String = "",
     val targetDays: Int = 0,
     val progress: Int = 0,
-    val achieved: Boolean = false
+    val achieved: Boolean = false,
+    val celebrated: Boolean = false // Nuevo campo persistente para poder separar los objetivos completados y poder ejecutar una animación para motivar al usuario
 )
+

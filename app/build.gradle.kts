@@ -70,6 +70,8 @@ dependencies {
     //MPAndroidChart para los Gráficos
     implementation(libs.mpandroidchart.vv310)
 
+    //Animaciones más épicas
+    implementation(libs.lottie.compose)
 
 
 
