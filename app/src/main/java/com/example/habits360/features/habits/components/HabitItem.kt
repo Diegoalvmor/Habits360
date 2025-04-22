@@ -1,5 +1,6 @@
 package com.example.habits360.features.habits.components
 
+import android.media.MediaPlayer
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -24,7 +25,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.habits360.R
 import com.example.habits360.features.habits.model.Habit
 
 @Composable
@@ -55,6 +58,9 @@ fun HabitItem(
         }
     }
 
+    val context = LocalContext.current
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,7 +77,15 @@ fun HabitItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
-                    onClick = onToggleComplete,
+                    onClick = {
+                        if (!isCompleted) {
+                            val mediaPlayer = MediaPlayer.create(context, R.raw.habit_completed)
+                            mediaPlayer.setOnCompletionListener {
+                                it.release() // Libera recursos automáticamente
+                            }
+                            mediaPlayer.start()
+                        }
+                        onToggleComplete() },
                     colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
                     modifier = Modifier.scale(scale.value)
                 ) {

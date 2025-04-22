@@ -1,6 +1,5 @@
 package com.example.habits360.data.api
 
-import android.util.Log
 import com.example.habits360.features.goals.model.Goal
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -83,6 +82,19 @@ class GoalsApiService {
         return@withContext response.isSuccessful
     }
 
+    suspend fun markGoalAsCelebrated(id: String) = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext
+        val request = Request.Builder()
+            .url("$baseUrl/goals/$id/celebrate")
+            .patch("".toRequestBody("application/json".toMediaType()))
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).execute().close()
+    }
+
+
+    /*
     //Para poder controlar la animación de los objetivos completados
     suspend fun markGoalAsCelebrated(id: String) = withContext(Dispatchers.IO) {
         val token = getToken() ?: return@withContext
@@ -103,6 +115,8 @@ class GoalsApiService {
         }
         response.close()
     }
+
+     */
 
 
 

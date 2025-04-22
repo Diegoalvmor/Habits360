@@ -1,5 +1,6 @@
 package com.example.habits360.features.goals
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +50,8 @@ import com.example.habits360.features.goals.model.Goal
 import com.example.habits360.features.habits.HabitsViewModel
 import com.example.habits360.features.habits.model.Habit
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
+
 
 @Composable
 fun GoalsScreen(
@@ -77,17 +81,19 @@ fun GoalsScreen(
         viewModel.loadGoals()
         habitsViewModel.loadHabits()
     }
-    LaunchedEffect(goals) {
-        if (goalJustCelebrated != null) return@LaunchedEffect // ya estamos celebrando uno
 
-        val uncelebratedGoal = goals.firstOrNull { it.achieved && !it.celebrated }
-        if (uncelebratedGoal != null && uncelebratedGoal.id != goalJustCelebrated?.id) {
+    val alreadyCelebrated = remember { mutableStateOf(false) }
+
+    //Aquí controlamos que la animación sólo ocurra una vez, y no se ejecute incorrectamente al por ejemplo aumentar el progreso de un hábito sin completar aún
+    LaunchedEffect(goals) {
+        val newlyAchieved = goals.firstOrNull { it.achieved && !it.celebrated }
+
+        if (newlyAchieved != null && newlyAchieved.id != goalJustCelebrated?.id) {
             showConfetti = true
-            achievedGoalTitle = uncelebratedGoal.title
-            goalJustCelebrated = uncelebratedGoal
+            achievedGoalTitle = newlyAchieved.title
+            goalJustCelebrated = newlyAchieved
         }
     }
-
 
 
 
@@ -114,11 +120,7 @@ fun GoalsScreen(
 
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(currentGoals) { goal ->
-                if (goal.achieved && !goal.celebrated && goal.id != null && goalJustCelebrated == null) {
-                    showConfetti = true
-                    achievedGoalTitle = goal.title
-                    goalJustCelebrated = goal
-                }
+
 
                 GoalCard(goal, onDelete = { viewModel.deleteGoal(goal.id ?: "") })
             }
@@ -214,13 +216,39 @@ fun GoalsScreen(
         }
 
         if (showConfetti) {
+            val mediaPlayer = remember { MediaPlayer.create(context, R.raw.goal_completed) }
+
+            // Reproduce al entrar en el diálogo
+            LaunchedEffect(Unit) {
+                delay(800) // Espera un segundo
+                mediaPlayer.start()
+            }
+
+            // Libera recursos al salir
+            DisposableEffect(Unit) {
+                onDispose {
+                    mediaPlayer.stop()
+                    mediaPlayer.release()
+                }
+            }
             AlertDialog(
-                onDismissRequest = { showConfetti = false },
+                onDismissRequest = { showConfetti = false
+                    goalJustCelebrated?.let {
+                        viewModel.celebrateGoal(it)
+                        goalJustCelebrated = null
+                    }
+
+                    alreadyCelebrated.value = false},
                 confirmButton = {
                     TextButton(onClick = {
                         showConfetti = false
-                        goalJustCelebrated?.let { viewModel.celebrateGoal(it) }
-                        goalJustCelebrated = null
+                        goalJustCelebrated?.let {
+                            viewModel.celebrateGoal(it)
+                            goalJustCelebrated = null
+                        }
+
+                        alreadyCelebrated.value = false
+
                     }) {
                         Text("¡Gracias!", fontWeight = FontWeight.Bold)
                     }
@@ -279,15 +307,12 @@ fun GoalCard(goal: Goal, completed: Boolean = false, onDelete: () -> Unit) {
 
 fun obtenerIdToken() {
     val user = FirebaseAuth.getInstance().currentUser
-    if (user != null) {
-        user.getIdToken(true)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val idToken = task.result?.token
-                    Log.d("IDToken", "ID Token: $idToken")
-                } else {
-                    Log.e("IDToken", "Error: ${task.exception?.message}")
-                }
-            }
+    user?.getIdToken(true)?.addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val idToken = task.result?.token
+            Log.d("IDToken", "ID Token: $idToken")
+        } else {
+            Log.e("IDToken", "Error: ${task.exception?.message}")
+        }
     }
 }

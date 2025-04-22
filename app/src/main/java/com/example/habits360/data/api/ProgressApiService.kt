@@ -111,7 +111,7 @@ class ProgressApiService {
         val existing = progresses.firstOrNull()
 
         if (existing?.id != null) {
-            // Hacemos un PUT para alternar el valor
+            // PUT: alternar el valor
             val updated = existing.copy(completed = !existing.completed)
             val json = gson.toJson(updated).toRequestBody("application/json".toMediaType())
 
@@ -123,7 +123,7 @@ class ProgressApiService {
 
             client.newCall(putRequest).execute().close()
         } else {
-            // No hay progreso todavía → creamos uno
+            // POST: crear nuevo
             val newProgress = Progress(
                 userId = Firebase.auth.currentUser?.uid ?: "",
                 habitId = habitId,
@@ -140,6 +140,23 @@ class ProgressApiService {
 
             client.newCall(postRequest).execute().close()
         }
+
+        // ✅ Sync objetivo relacionado
+        val goalSyncJson = """
+        {
+            "habitId": "$habitId",
+            "date": "$today"
+        }
+    """.trimIndent().toRequestBody("application/json".toMediaType())
+
+        val syncRequest = Request.Builder()
+            .url("$baseUrl/goals/update-progress")
+            .post(goalSyncJson)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(syncRequest).execute().close()
     }
+
 
 }

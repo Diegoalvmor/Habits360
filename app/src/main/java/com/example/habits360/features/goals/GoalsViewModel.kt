@@ -1,6 +1,5 @@
 package com.example.habits360.features.goals
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habits360.data.repository.GoalsRepository
 import com.example.habits360.features.goals.model.Goal
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class GoalsViewModel (private val repo: GoalsRepository = GoalsRepository()) : ViewModel() {
@@ -56,15 +54,13 @@ class GoalsViewModel (private val repo: GoalsRepository = GoalsRepository()) : V
 
     fun celebrateGoal(goal: Goal) {
         viewModelScope.launch {
-            Log.d("GoalsViewModel", "Celebrating goal with id: ${goal.id}")
-
             if (goal.id != null) {
                 repo.markGoalAsCelebrated(goal.id)
-                delay(1000)
                 loadGoals()
             }
         }
     }
+
 
 
 

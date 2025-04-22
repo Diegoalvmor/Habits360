@@ -83,10 +83,6 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
     }
 
 
-
-
-
-
     //para sincronizar el progreso al cumplir un Hábito
     lateinit var goalsViewModel: GoalsViewModel
 
@@ -110,7 +106,7 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
 
 
 
-
+    //Esto creo que lo puedo ir borrando
     suspend fun isHabitCompletedToday(habitId: String): Boolean {
         return progressRepo.isHabitCompletedToday(habitId)
     }
