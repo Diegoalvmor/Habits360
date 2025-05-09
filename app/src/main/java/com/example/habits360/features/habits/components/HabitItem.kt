@@ -84,8 +84,9 @@ fun HabitItem(
                                 it.release() // Libera recursos automáticamente
                             }
                             mediaPlayer.start()
+                            onToggleComplete()
                         }
-                        onToggleComplete() },
+                         },
                     colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
                     modifier = Modifier.scale(scale.value)
                 ) {

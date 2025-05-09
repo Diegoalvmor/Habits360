@@ -61,7 +61,7 @@ class ProgressApiService {
         val url = HttpUrl.Builder()
             .scheme("https")
             .host("habits-api-637237112740.europe-southwest1.run.app")
-            .addPathSegments("progress/user")  // <- Endpoint correcto
+            .addPathSegments("progress/user")  // <- Endpoint nuevo
             .addQueryParameter("habitId", habitId)
             .addQueryParameter("date", today)
             .build()
@@ -111,7 +111,7 @@ class ProgressApiService {
         val existing = progresses.firstOrNull()
 
         if (existing?.id != null) {
-            // PUT: alternar el valor
+            // PUT: alternar el valor si ya existe el progreso para actualizar el celebrated
             val updated = existing.copy(completed = !existing.completed)
             val json = gson.toJson(updated).toRequestBody("application/json".toMediaType())
 
@@ -123,7 +123,7 @@ class ProgressApiService {
 
             client.newCall(putRequest).execute().close()
         } else {
-            // POST: crear nuevo
+            // POST: crear nuevo en caso de que no exista
             val newProgress = Progress(
                 userId = Firebase.auth.currentUser?.uid ?: "",
                 habitId = habitId,

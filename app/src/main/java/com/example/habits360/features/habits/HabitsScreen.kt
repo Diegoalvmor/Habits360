@@ -89,7 +89,7 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
                 }
             }
 
-            // Formulario dentro del scroll (se muestra solo si expandedForm es true)
+            // Formulario dentro del scroll (se muestra solo si expandedForm es true, al darle al botón)
             item {
                 AnimatedVisibility(visible = expandedForm) {
                     Column {
