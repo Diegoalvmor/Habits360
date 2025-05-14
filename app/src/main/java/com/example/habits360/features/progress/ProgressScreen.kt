@@ -1,44 +1,52 @@
 package com.example.habits360.features.progress
 
 //Salvavidas
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-
+import com.example.habits360.features.profile.calendarUtils.BarChartView
+import com.example.habits360.features.profile.calendarUtils.CalendarView
+import java.time.YearMonth
 
 @Composable
 fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
-    val context = LocalContext.current
-    val progressList = viewModel.progress
-    val groupedData = viewModel.getGroupedProgressByWeek()
+    val monthProgress by viewModel.monthProgress
+    val categoryData by viewModel.categoryStats
+    val currentMonth = remember { YearMonth.now() }
 
-    AndroidView(factory = { ctx ->
-        val chart = BarChart(ctx)
+    LaunchedEffect(Unit) {
+        viewModel.loadCalendarProgress(currentMonth)
+        viewModel.loadCategoryStats()
+    }
 
-        val entries = groupedData.mapIndexed { index, value ->
-            BarEntry(index.toFloat(), value.toFloat())
-        }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text("📆 Tu progreso en ${currentMonth.month.name.lowercase().replaceFirstChar { it.uppercase() }}", fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(12.dp))
 
-        val dataSet = BarDataSet(entries, "Hábitos completados")
-        dataSet.color = Color.Blue.toArgb()
+        CalendarView(currentMonth, monthProgress)
 
-        val data = BarData(dataSet)
-        chart.data = data
-        chart.invalidate()
+        Spacer(Modifier.height(24.dp))
 
-        chart
-    }, modifier = Modifier
-        .fillMaxWidth()
-        .height(300.dp))
+        Text("📊 Hábitos completados por categoría", fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+
+        BarChartView(categoryData)
+    }
 }
+
+

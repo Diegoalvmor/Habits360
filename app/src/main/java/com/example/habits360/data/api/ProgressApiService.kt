@@ -1,6 +1,7 @@
 package com.example.habits360.data.api
 
 import android.util.Log
+import com.example.habits360.features.profile.model.CalendarDayProgress
 import com.example.habits360.features.progress.model.Progress
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -16,6 +17,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.LocalDate
+import java.time.YearMonth
 
 class ProgressApiService {
     private val baseUrl = "https://habits-api-637237112740.europe-southwest1.run.app"
@@ -156,6 +158,40 @@ class ProgressApiService {
             .build()
 
         client.newCall(syncRequest).execute().close()
+    }
+
+
+    suspend fun getCalendarProgress(month: YearMonth): List<CalendarDayProgress> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyList()
+        val url = "$baseUrl/progress/calendar?month=${month.toString()}"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        if (!response.isSuccessful) return@withContext emptyList()
+
+        val body = response.body?.string()
+        val listType = object : TypeToken<List<CalendarDayProgress>>() {}.type
+        return@withContext gson.fromJson(body, listType)
+    }
+
+    suspend fun getCategoryStats(): Map<String, Int> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyMap()
+
+        val request = Request.Builder()
+            .url("$baseUrl/progress/stats-by-category")
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string()
+        val type = object : TypeToken<Map<String, Int>>() {}.type
+        return@withContext gson.fromJson(body, type)
     }
 
 
