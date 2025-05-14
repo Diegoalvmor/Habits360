@@ -96,9 +96,6 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
             progressRepo.toggleTodayProgress(habitId)
             updateCompletionStatus(habitId)
 
-            if (::goalsViewModel.isInitialized) {
-                goalsViewModel.syncProgressForHabit(habitId)
-            }
         }
     }
 
