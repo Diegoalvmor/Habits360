@@ -3,6 +3,7 @@ package com.example.habits360.data.api
 import android.util.Log
 import com.example.habits360.features.profile.model.CalendarDayProgress
 import com.example.habits360.features.progress.model.Progress
+import com.example.habits360.features.stadistics.model.CategoryProgressDay
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -193,6 +194,34 @@ class ProgressApiService {
         val type = object : TypeToken<Map<String, Int>>() {}.type
         return@withContext gson.fromJson(body, type)
     }
+
+
+    //Para el gráfico lineal de las estadísticas
+    suspend fun getCategoryLineProgress(month: String): List<CategoryProgressDay> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyList()
+
+        val url = HttpUrl.Builder()
+            .scheme("https")
+            .host("habits-api-637237112740.europe-southwest1.run.app")
+            .addPathSegments("progress/category-line")
+            .addQueryParameter("month", month)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string()
+
+        if (!response.isSuccessful || body == null) return@withContext emptyList()
+
+        val type = object : TypeToken<List<CategoryProgressDay>>() {}.type
+        return@withContext gson.fromJson(body, type)
+    }
+
 
 
 }

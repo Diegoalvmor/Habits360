@@ -17,7 +17,8 @@ fun BottomNavBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Habits,
         BottomNavItem.Goals,
-        BottomNavItem.Progress
+        BottomNavItem.Progress,
+        BottomNavItem.Stats
     )
     NavigationBar {
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -42,4 +43,5 @@ sealed class BottomNavItem(val route: String, val icon: androidx.compose.ui.grap
     object Habits : BottomNavItem("habits", Icons.Default.CheckCircle, "Hábitos")
     object Goals : BottomNavItem("goals", Icons.Default.FitnessCenter, "Objetivos")
     object Progress : BottomNavItem("progress", Icons.Default.Leaderboard, "Progreso")
+    object Stats : BottomNavItem("stadistics", Icons.Default.Leaderboard, "Estadísticas")
 }

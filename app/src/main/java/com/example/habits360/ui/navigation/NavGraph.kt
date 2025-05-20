@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.habits360.features.goals.GoalsScreen
 import com.example.habits360.features.habits.HabitsScreen
 import com.example.habits360.features.progress.ProgressScreen
+import com.example.habits360.features.stadistics.StatsScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -15,5 +16,6 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         composable(BottomNavItem.Habits.route) { HabitsScreen() }
         composable(BottomNavItem.Goals.route) { GoalsScreen() }
         composable(BottomNavItem.Progress.route) { ProgressScreen() }
+        composable(BottomNavItem.Stats.route) { StatsScreen() }
     }
 }
