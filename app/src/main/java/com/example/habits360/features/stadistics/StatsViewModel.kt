@@ -23,7 +23,10 @@ class StatsViewModel: ViewModel() {
             categoryLineData = api.getCategoryLineProgress(month)
             Log.d("StatsVM", "Category data: ${categoryLineData.size} días recibidos")
             categoryLineData.forEach {
-                Log.d("StatsVM", "${it.date} => Agua=${it.Agua}, Dormir=${it.Dormir}, Ejercicio=${it.Ejercicio}, Mental=${it.Mental}")
+                Log.d(
+                    "StatsVM",
+                    "${it.date} => Agua=${it.Agua}, Dormir=${it.Dormir}, Ejercicio=${it.Ejercicio}, Mental=${it.Mental}"
+                )
             }
         }
     }
@@ -43,8 +46,17 @@ class StatsViewModel: ViewModel() {
             "Mental" to 0f
         )
 
+        // Offset por categoría para evitar solapamientos visuales
+        val categoryOffsets = mapOf(
+            "Agua" to 0.00f,
+            "Dormir" to 0.03f,
+            "Ejercicio" to 0.06f,
+            "Mental" to 0.09f
+        )
+
         categoryLineData.sortedBy { it.date }.forEachIndexed { index, day ->
             val dayIndex = index.toFloat()
+
             listOf("Agua", "Dormir", "Ejercicio", "Mental").forEach { cat ->
                 val completed = when (cat) {
                     "Agua" -> day.Agua
@@ -53,10 +65,16 @@ class StatsViewModel: ViewModel() {
                     "Mental" -> day.Mental
                     else -> null
                 }
-                if (completed == true) counters[cat] = counters[cat]!! + 1
-                else if (completed == false) counters[cat] = counters[cat]!! - 1
 
-                result[cat]?.add(Entry(dayIndex, counters[cat]!!))
+                // Solo bajamos si ya es mayor que 0
+                if (completed == true) {
+                    counters[cat] = counters[cat]!! + 1
+                } else if (completed == false) {
+                    counters[cat] = maxOf(0f, counters[cat]!! - 1)
+                }
+
+                val finalY = counters[cat]!! + (categoryOffsets[cat] ?: 0f)
+                result[cat]?.add(Entry(dayIndex, finalY))
             }
         }
 

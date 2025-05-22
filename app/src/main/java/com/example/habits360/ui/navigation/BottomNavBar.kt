@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,5 +44,5 @@ sealed class BottomNavItem(val route: String, val icon: androidx.compose.ui.grap
     object Habits : BottomNavItem("habits", Icons.Default.CheckCircle, "Hábitos")
     object Goals : BottomNavItem("goals", Icons.Default.FitnessCenter, "Objetivos")
     object Progress : BottomNavItem("progress", Icons.Default.Leaderboard, "Progreso")
-    object Stats : BottomNavItem("stadistics", Icons.Default.Leaderboard, "Estadísticas")
+    object Stats : BottomNavItem("stadistics", Icons.Default.SelfImprovement , "Estadísticas")
 }
