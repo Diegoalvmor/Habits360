@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.habits360.features.profile.model.CalendarDayProgress
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
+import com.example.habits360.features.stadistics.model.DailySummary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -222,6 +223,23 @@ class ProgressApiService {
         return@withContext gson.fromJson(body, type)
     }
 
+
+    suspend fun getDailySummary(month: String): List<DailySummary> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyList()
+        val url = "$baseUrl/progress/daily-summary?month=$month"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string() ?: return@withContext emptyList()
+
+        val type = object : TypeToken<List<DailySummary>>() {}.type
+        return@withContext gson.fromJson<List<DailySummary>>(body, type)
+    }
 
 
 }

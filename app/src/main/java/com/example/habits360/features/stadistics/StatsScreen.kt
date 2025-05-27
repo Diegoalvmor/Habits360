@@ -32,18 +32,19 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
     val context = LocalContext.current
     val month = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) }
 
-    // 🔄 Refrescar al entrar a la pestaña
+    // Refrescar al entrar a la pestaña
     LaunchedEffect(Unit) {
         viewModel.loadCategoryLineProgress(month)
+        viewModel.loadDailySummary(month)
     }
 
     val chartData = viewModel.computeLineChartData()
 
-    // ✅ Estado para recordar el chart y actualizarlo
+    // Estado para recordar el chart y actualizarlo
     val chartState = rememberUpdatedState(chartData)
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("📈 Progreso por categoría", style = MaterialTheme.typography.headlineSmall)
+        Text("Progreso por categoría", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(16.dp))
 
         AndroidView(factory = { ctx ->
@@ -61,7 +62,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
             chart
         }, update = { chart ->
 
-            // 🟦 Colores por categoría
+            //  Colores por categoría
             val colors = mapOf(
                 "Agua" to Color.Blue,
                 "Dormir" to Color.Yellow,
@@ -69,7 +70,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                 "Mental" to Color(0xFF8E24AA)
             )
 
-            // 🧪 Verificar si hay datos
+            //  Verificar si hay datos
             Log.d("StatsScreen", "Entries recibidos: ${chartState.value}")
 
             val lineDataSets = chartState.value.entries.mapNotNull { (category, entries) ->
@@ -87,13 +88,13 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
             }
 
             chart.data = LineData(lineDataSets)
-            chart.legend.textSize = 14f
+            chart.legend.textSize = 16f
             chart.legend.isWordWrapEnabled = true
             chart.legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
             chart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
             chart.legend.orientation = Legend.LegendOrientation.HORIZONTAL
 
-            chart.invalidate() // ✅ Redibujar
+            chart.invalidate() //  Redibujar
 
         }, modifier = Modifier
             .fillMaxWidth()

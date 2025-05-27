@@ -15,19 +15,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.habits360.features.profile.calendarUtils.BarChartView
 import com.example.habits360.features.profile.calendarUtils.CalendarView
+import com.example.habits360.features.progress.model.BarChartView
 import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
 fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
     val monthProgress by viewModel.monthProgress
-    val categoryData by viewModel.categoryStats
+    val dailySummary by viewModel.dailySummary
     val currentMonth = remember { YearMonth.now() }
 
     LaunchedEffect(Unit) {
         viewModel.loadCalendarProgress(currentMonth)
         viewModel.loadCategoryStats()
+        viewModel.loadDailySummary(currentMonth.toString())
     }
 
     Column(
@@ -35,7 +38,7 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("📆 Tu progreso en ${currentMonth.month.name.lowercase().replaceFirstChar { it.uppercase() }}", fontWeight = FontWeight.Bold)
+        Text("📆 Tu progreso en ${currentMonth.month.getDisplayName(TextStyle.FULL, Locale("es", "ES"))}", fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
 
         CalendarView(currentMonth, monthProgress)
@@ -45,8 +48,10 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
         Text("📊 Hábitos completados por categoría", fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
-        BarChartView(categoryData)
+        BarChartView(dailySummary)
     }
 }
+
+
 
 

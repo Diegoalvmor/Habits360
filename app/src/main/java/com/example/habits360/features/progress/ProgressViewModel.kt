@@ -9,11 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.habits360.data.repository.ProgressRepository
 import com.example.habits360.features.profile.model.CalendarDayProgress
 import com.example.habits360.features.progress.model.Progress
+import com.example.habits360.features.stadistics.model.DailySummary
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
-import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 class ProgressViewModel (private val repo: ProgressRepository = ProgressRepository()) : ViewModel() {
 
@@ -40,15 +38,6 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
 
     }
 
-    fun getGroupedProgressByWeek(): List<Int> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        return progress
-            .groupBy {
-                LocalDate.parse(it.date, formatter).with(DayOfWeek.MONDAY).toString()
-            }
-            .map { (_, list) -> list.count { it.completed } }
-    }
-
     private val _monthProgress = mutableStateOf<List<CalendarDayProgress>>(emptyList())
     val monthProgress: State<List<CalendarDayProgress>> = _monthProgress
 
@@ -69,6 +58,17 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
         }
     }
 
+
+
+    private val _dailySummary = mutableStateOf<List<DailySummary>>(emptyList())
+    val dailySummary: State<List<DailySummary>> get() = _dailySummary
+
+
+    fun loadDailySummary(month: String) {
+        viewModelScope.launch {
+            _dailySummary.value = repo.getDailySummary(month) // ✅ Esto está bien
+        }
+    }
 
 
 
