@@ -2,6 +2,7 @@ package com.example.habits360.data.api
 
 import android.util.Log
 import com.example.habits360.features.profile.model.CalendarDayProgress
+import com.example.habits360.features.progress.model.ActiveHabitsCount
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
 import com.example.habits360.features.stadistics.model.DailySummary
@@ -240,6 +241,27 @@ class ProgressApiService {
         val type = object : TypeToken<List<DailySummary>>() {}.type
         return@withContext gson.fromJson<List<DailySummary>>(body, type)
     }
+
+
+    //Para contar realmente los objetivos activos asociados a un hábito
+    suspend fun getActiveHabitsCount(month: YearMonth): List<ActiveHabitsCount> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyList()
+
+        val url = "$baseUrl/habits/active-count-month?month=${month.toString()}"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string() ?: return@withContext emptyList()
+
+        val type = object : TypeToken<List<ActiveHabitsCount>>() {}.type
+        return@withContext gson.fromJson<List<ActiveHabitsCount>>(body, type)
+    }
+
 
 
 }

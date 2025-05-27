@@ -2,6 +2,7 @@ package com.example.habits360.data.repository
 
 import com.example.habits360.data.api.ProgressApiService
 import com.example.habits360.features.profile.model.CalendarDayProgress
+import com.example.habits360.features.progress.model.ActiveHabitsCount
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.DailySummary
 import java.time.YearMonth
@@ -28,6 +29,11 @@ class ProgressRepository (private val api: ProgressApiService = ProgressApiServi
     }
     suspend fun getDailySummary(month: String): List<DailySummary> {
         return api.getDailySummary(month)
+    }
+
+
+    suspend fun getActiveHabitsCount(month: YearMonth): List<ActiveHabitsCount> {
+        return api.getActiveHabitsCount(month)
     }
 
 }
