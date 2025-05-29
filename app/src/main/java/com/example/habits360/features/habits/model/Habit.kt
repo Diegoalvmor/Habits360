@@ -7,5 +7,7 @@ data class Habit(
     val description: String = "",
     val category: String = "",   // Agua, Dormir, Ejercicio, Mental
     val frequency: String = "",  // Diariamente, Semanalmente...
-    val createdAt: String = ""   // ISO 8601
+    val createdAt: String = "",   // ISO 8601
+    val activo: Boolean = true,
+    val deactivatedAt: String? = null
 )

@@ -1,8 +1,6 @@
 package com.example.habits360.data.api
 
 import android.util.Log
-import com.example.habits360.features.profile.model.CalendarDayProgress
-import com.example.habits360.features.progress.model.ActiveHabitsCount
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
 import com.example.habits360.features.stadistics.model.DailySummary
@@ -20,7 +18,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.LocalDate
-import java.time.YearMonth
 
 class ProgressApiService {
     private val baseUrl = "https://habits-api-637237112740.europe-southwest1.run.app"
@@ -43,6 +40,22 @@ class ProgressApiService {
         val type = object : TypeToken<List<Progress>>() {}.type
         return@withContext gson.fromJson(body, type)
     }
+
+    suspend fun getAllProgress(): List<Progress> = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext emptyList()
+        val request = Request.Builder()
+            .url("$baseUrl/progress/user/all")
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string()
+        val type = object : TypeToken<List<Progress>>() {}.type
+        return@withContext gson.fromJson(body, type)
+    }
+
+
+
 
     suspend fun postProgress(progress: Progress): Progress? = withContext(Dispatchers.IO) {
         val json = gson.toJson(progress)
@@ -164,38 +177,6 @@ class ProgressApiService {
     }
 
 
-    suspend fun getCalendarProgress(month: YearMonth): List<CalendarDayProgress> = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext emptyList()
-        val url = "$baseUrl/progress/calendar?month=${month.toString()}"
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .get()
-            .build()
-
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) return@withContext emptyList()
-
-        val body = response.body?.string()
-        val listType = object : TypeToken<List<CalendarDayProgress>>() {}.type
-        return@withContext gson.fromJson(body, listType)
-    }
-
-    suspend fun getCategoryStats(): Map<String, Int> = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext emptyMap()
-
-        val request = Request.Builder()
-            .url("$baseUrl/progress/stats-by-category")
-            .addHeader("Authorization", "Bearer $token")
-            .get()
-            .build()
-
-        val response = client.newCall(request).execute()
-        val body = response.body?.string()
-        val type = object : TypeToken<Map<String, Int>>() {}.type
-        return@withContext gson.fromJson(body, type)
-    }
 
 
     //Para el gráfico lineal de las estadísticas
@@ -243,24 +224,6 @@ class ProgressApiService {
     }
 
 
-    //Para contar realmente los objetivos activos asociados a un hábito
-    suspend fun getActiveHabitsCount(month: YearMonth): List<ActiveHabitsCount> = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext emptyList()
-
-        val url = "$baseUrl/habits/active-count-month?month=${month.toString()}"
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .get()
-            .build()
-
-        val response = client.newCall(request).execute()
-        val body = response.body?.string() ?: return@withContext emptyList()
-
-        val type = object : TypeToken<List<ActiveHabitsCount>>() {}.type
-        return@withContext gson.fromJson<List<ActiveHabitsCount>>(body, type)
-    }
 
 
 

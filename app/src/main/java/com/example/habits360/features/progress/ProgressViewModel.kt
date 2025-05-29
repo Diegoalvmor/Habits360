@@ -27,7 +27,7 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
     fun loadProgress() {
         viewModelScope.launch {
             loading = true
-            progress = repo.getProgress()
+            progress = repo.getAllProgress()
             loading = false
         }
     }
@@ -45,21 +45,6 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
 
     private val _categoryStats = mutableStateOf<Map<String, Int>>(emptyMap())
     val categoryStats: State<Map<String, Int>> = _categoryStats
-
-    fun loadCalendarProgress(month: YearMonth) {
-        viewModelScope.launch {
-            val data = repo.getCalendarProgress(month)
-            _monthProgress.value = data
-        }
-    }
-
-    fun loadCategoryStats() {
-        viewModelScope.launch {
-            val stats = repo.getCategoryStats()
-            _categoryStats.value = stats
-        }
-    }
-
 
 
     private val _dailySummary = mutableStateOf<List<DailySummary>>(emptyList())
@@ -92,7 +77,7 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
 
                 DayHabitStatus(
                     date = LocalDate.parse(item.date),
-                    activeHabits = if (item.activeHabits == 0) item.completed else item.activeHabits,
+                    activeHabits = if (item.completed == 0) item.activeHabits else item.total,
                     completedHabits = item.completed,
                     completedCategories = completedCategories
                 )

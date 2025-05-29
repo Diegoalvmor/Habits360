@@ -11,31 +11,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = GreenPrimaryDark,
-    secondary = GreenSecondaryDark,
-    tertiary = BlueTertiaryDark,
-    background = BackgroundDark,
-    surface = BackgroundDark,
+val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF6200EE),       // purple_500
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
+    secondary = Color(0xFF03DAC5),     // teal_200
+    onSecondary = Color.Black,
+    tertiary = Color(0xFFBB86FC),      // purple_200
+    background = Color.White,
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    primaryContainer = Color(0xFF018786),  // teal_700
+    onPrimaryContainer = Color.White
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = GreenPrimary,
-    secondary = GreenSecondary,
-    tertiary = BlueTertiary,
-    background = BackgroundLight,
-    surface = Color.White,
-    onPrimary = Color.White,
+val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFFBB86FC),       // purple_200
+    onPrimary = Color.Black,
+    secondary = Color(0xFF03DAC5),     // teal_200
     onSecondary = Color.Black,
-    onTertiary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
+    tertiary = Color(0xFF6200EE),      // purple_500
+    background = Color(0xFF121212),
+    onBackground = Color.White,
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color.White,
+    primaryContainer = Color(0xFF03DAC5),
+    onPrimaryContainer = Color.Black
 )
+
 
 @Composable
 fun Habits360Theme(

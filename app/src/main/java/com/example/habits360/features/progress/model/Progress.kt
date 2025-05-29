@@ -4,6 +4,7 @@ data class Progress(
     val id: String? = null,
     val userId: String = "",
     val habitId: String = "",
-    val date: String = "", // e.g. "2025-04-09"
-    val completed: Boolean = false
+    val date: String = "", //  "YYYY-mm-DD"
+    val completed: Boolean = false,
+    val category: String = ""
 )

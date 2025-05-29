@@ -103,15 +103,5 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
 
 
 
-    //Esto creo que lo puedo ir borrando
-    suspend fun isHabitCompletedToday(habitId: String): Boolean {
-        return progressRepo.isHabitCompletedToday(habitId)
-    }
-
-    fun debugHabitIds() {
-        habits.forEach {
-            Log.d("DebugID", "Habit title: ${it.title}, ID: ${it.id}")
-        }
-    }
 
 }

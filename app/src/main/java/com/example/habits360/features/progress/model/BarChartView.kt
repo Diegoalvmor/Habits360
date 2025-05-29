@@ -146,5 +146,6 @@ fun BarChartView(dailySummary: List<DailySummary>) {
         .height(320.dp)
         .padding(horizontal = 12.dp)
     )
+
 }
 

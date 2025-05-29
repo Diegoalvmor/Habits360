@@ -23,3 +23,4 @@ val BlueTertiaryDark = Color(0xFF42A5F5)
 // Extras
 val BackgroundLight = Color(0xFFF0FFF4)     // Fondo claro suave
 val BackgroundDark = Color(0xFF121212)      // Fondo oscuro puro
+

@@ -7,10 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habits360.data.api.ProgressApiService
+import com.example.habits360.data.repository.ProgressRepository
+import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
 import com.example.habits360.features.stadistics.model.DailySummary
 import com.github.mikephil.charting.data.Entry
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class StatsViewModel: ViewModel() {
 
@@ -18,6 +22,18 @@ class StatsViewModel: ViewModel() {
 
     var categoryLineData by mutableStateOf<List<CategoryProgressDay>>(emptyList())
         private set
+
+    var progressList by mutableStateOf<List<Progress>>(emptyList())
+        private set
+
+
+    fun loadProgressData() {
+        viewModelScope.launch {
+            progressList = ProgressRepository().getAllProgress()
+            Log.d("StatsVM", "Progresos cargados: ${progressList.size}")
+        }
+    }
+
 
     fun loadCategoryLineProgress(month: String) {
         viewModelScope.launch {
@@ -32,61 +48,51 @@ class StatsViewModel: ViewModel() {
         }
     }
 
-    var dailySummary by mutableStateOf<List<DailySummary>>(emptyList())
-        private set
+    private var _dailySummary by mutableStateOf<List<DailySummary>>(emptyList())
+    val dailySummary: List<DailySummary> get() = _dailySummary
+
 
     fun loadDailySummary(month: String) {
         viewModelScope.launch {
-            dailySummary = api.getDailySummary(month)
+            _dailySummary = api.getDailySummary(month)
         }
     }
-
-
 
     fun computeLineChartData(): Map<String, List<Entry>> {
-        val result = mutableMapOf(
-            "Agua" to mutableListOf<Entry>(),
-            "Dormir" to mutableListOf<Entry>(),
-            "Ejercicio" to mutableListOf<Entry>(),
-            "Mental" to mutableListOf<Entry>()
-        )
+        val today = LocalDate.now()
+        val firstDay = today.withDayOfMonth(1)
+        val daysInMonth = ChronoUnit.DAYS.between(firstDay, today).toInt() + 1
 
-        val counters = mutableMapOf(
-            "Agua" to 0f,
-            "Dormir" to 0f,
-            "Ejercicio" to 0f,
-            "Mental" to 0f
-        )
+        val progresses = progressList
+            .filter { it.completed && it.category.isNotBlank() }
+            .groupBy { it.date }
 
-        // Offset por categoría para evitar solapamientos visuales
-        val categoryOffsets = mapOf(
-            "Agua" to 0.00f,
-            "Dormir" to 0.03f,
-            "Ejercicio" to 0.06f,
-            "Mental" to 0.09f
-        )
+        val categories = listOf("Agua", "Dormir", "Ejercicio", "Mental")
+        val result = mutableMapOf<String, MutableList<Entry>>()
+        val counters = mutableMapOf<String, Float>()
 
-        categoryLineData.sortedBy { it.date }.forEachIndexed { index, day ->
-            val dayIndex = index.toFloat()
 
-            listOf("Agua", "Dormir", "Ejercicio", "Mental").forEach { cat ->
-                val completed = when (cat) {
-                    "Agua" -> day.Agua
-                    "Dormir" -> day.Dormir
-                    "Ejercicio" -> day.Ejercicio
-                    "Mental" -> day.Mental
-                    else -> null
+        // Inicializar todo en 0
+        categories.forEach {
+            result[it] = mutableListOf()
+            counters[it] = 0f
+        }
+
+        for (dayIndex in 0 until daysInMonth) {
+            val currentDate = firstDay.plusDays(dayIndex.toLong())
+            val dateStr = currentDate.toString()
+            val progressesToday = progresses[dateStr] ?: emptyList()
+
+            categories.forEach { cat ->
+                val hadProgress = progressesToday.any { it.category == cat }
+
+                if (hadProgress) {
+                    counters[cat] = counters[cat]!! + 10
+                } else {
+                    counters[cat] = maxOf(0f, counters[cat]!! - 10)
                 }
 
-                // Solo bajamos si ya es mayor que 0
-                if (completed == true) {
-                    counters[cat] = counters[cat]!! + 1
-                } else if (completed == false) {
-                    counters[cat] = maxOf(0f, counters[cat]!! - 1)
-                }
-
-                val finalY = counters[cat]!! + (categoryOffsets[cat] ?: 0f)
-                result[cat]?.add(Entry(dayIndex, finalY))
+                result[cat]?.add(Entry(dayIndex.toFloat(), counters[cat]!!))
             }
         }
 
@@ -94,42 +100,44 @@ class StatsViewModel: ViewModel() {
     }
 
 
-    fun computeLineChartDataFromSummary(): Map<String, List<Entry>> {
-        val result = mutableMapOf(
-            "Agua" to mutableListOf<Entry>(),
-            "Dormir" to mutableListOf<Entry>(),
-            "Ejercicio" to mutableListOf<Entry>(),
-            "Mental" to mutableListOf<Entry>()
-        )
 
-        val counters = mutableMapOf(
-            "Agua" to 0f,
-            "Dormir" to 0.3f,
-            "Ejercicio" to 0.6f,
-            "Mental" to 0.9f
-        )
 
-        dailySummary.sortedBy { it.date }.forEachIndexed { index, day ->
-            val dayIndex = index.toFloat()
 
-            listOf("Agua", "Dormir", "Ejercicio", "Mental").forEach { cat ->
-                val value = when (cat) {
-                    "Agua" -> day.Agua ?: 0
-                    "Dormir" -> day.Dormir ?: 0
-                    "Ejercicio" -> day.Ejercicio ?: 0
-                    "Mental" -> day.Mental ?: 0
-                    else -> 0
-                }
 
-                // +1 si hubo completado, -1 si no
-                if (value > 0) counters[cat] = counters[cat]!! + 1
-                else if (value == 0 && counters[cat]!! > 0) counters[cat] = counters[cat]!! - 1
 
-                result[cat]?.add(Entry(dayIndex, counters[cat]!!))
+    fun computeCumulativeProgressLine(): List<Entry> {
+        val progresses = progressList
+            .filter { it.completed }
+            .groupBy { it.date }
+
+        val today = LocalDate.now()
+        val firstDay = today.withDayOfMonth(1)
+
+        val entries = mutableListOf<Entry>()
+        var cumulative = 0f
+
+        for (day in 0..ChronoUnit.DAYS.between(firstDay, today)) {
+            val currentDate = firstDay.plusDays(day)
+            val dateStr = currentDate.toString()
+
+            val progressesToday = progresses[dateStr]?.distinctBy { it.habitId } ?: emptyList()
+
+            if (progressesToday.isEmpty()) {
+                cumulative = maxOf(0f, cumulative - 1)
+            } else {
+                cumulative += progressesToday.size
             }
+
+            entries.add(Entry(day.toFloat(), cumulative))
         }
 
-        return result
+        return entries
     }
+
+
+
+
+
+
 
 }

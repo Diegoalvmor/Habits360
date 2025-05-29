@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,7 +57,14 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
     LaunchedEffect(Unit) {
         viewModel.loadHabitStatus(currentMonth)
         viewModel.loadDailySummary(currentMonth.toString())
+
     }
+    LaunchedEffect(currentMonth) {
+        if (dailySummary.isEmpty()) {
+            viewModel.loadDailySummary(currentMonth.toString())
+        }
+    }
+
 
     Column(
         Modifier
@@ -105,7 +113,11 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
         Text("📊 Hábitos completados por categoría", fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
-        BarChartView(dailySummary)
+        if (dailySummary.isNotEmpty()) {
+            BarChartView(dailySummary)
+        } else {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
     }
 
     // Modal bottom sheet para mostrar detalle del día seleccionado
