@@ -73,6 +73,10 @@ dependencies {
     //Animaciones más épicas
     implementation(libs.lottie.compose)
 
+    //Para las notifiaciones
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.work.multiprocess) //para los multiprocesos
+
 
 
     // GSON (para convertir JSON <-> objetos) También podríamos hacerlo con retrofit.

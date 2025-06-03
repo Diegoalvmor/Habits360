@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,13 +30,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.habits360.features.progress.model.BarChartView
 import com.example.habits360.features.progress.model.CalendarView
 import com.example.habits360.features.progress.model.DayDetailBottomSheet
 import com.example.habits360.features.progress.model.DayHabitStatus
+import com.example.habits360.features.progress.utils.SharedSyncViewModel
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -53,12 +57,22 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
     val sheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
+    val syncViewModel: SharedSyncViewModel = viewModel(LocalContext.current as ViewModelStoreOwner)
+    val syncSignal by syncViewModel.syncSignal.collectAsState()
 
+
+    //para sincronizar con completar un hábito
+    LaunchedEffect(syncSignal) {
+        viewModel.loadHabitStatus(currentMonth)
+        viewModel.loadDailySummary(currentMonth.toString())
+    }
+    //Para cargar al abrir
     LaunchedEffect(Unit) {
         viewModel.loadHabitStatus(currentMonth)
         viewModel.loadDailySummary(currentMonth.toString())
 
     }
+    //Para recargar por si al abrir la página carga antes la UI que la API
     LaunchedEffect(currentMonth) {
         if (dailySummary.isEmpty()) {
             viewModel.loadDailySummary(currentMonth.toString())
@@ -114,6 +128,7 @@ fun ProgressScreen(viewModel: ProgressViewModel = viewModel()) {
         Spacer(Modifier.height(8.dp))
 
         if (dailySummary.isNotEmpty()) {
+
             BarChartView(dailySummary)
         } else {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))

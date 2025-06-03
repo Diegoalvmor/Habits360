@@ -1,6 +1,12 @@
 package com.example.habits360.features.habits
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,15 +35,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.habits360.features.goals.GoalsViewModel
 import com.example.habits360.features.habits.components.HabitItem
 import com.example.habits360.features.habits.model.Habit
+import com.example.habits360.features.progress.utils.SharedSyncViewModel
 import com.example.habits360.home.DropdownMenuBox
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -55,115 +69,172 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
     var frequency by remember { mutableStateOf("daily") }
     var expandedForm by remember { mutableStateOf(false) }
 
+    val colors = MaterialTheme.colorScheme
+    //Para sincronizar las demás pestañas
+    val syncViewModel: SharedSyncViewModel = viewModel(LocalContext.current as ViewModelStoreOwner)
+
+
     LaunchedEffect(Unit) {
         viewModel.loadHabits()
         viewModel.habits.forEach { viewModel.updateCompletionStatus(it.id ?: "") }
         viewModel.attachGoalsViewModel(goalsViewModel)
     }
 
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("🧠 Hábitos actuales", style = MaterialTheme.typography.headlineMedium)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.background)
+            .padding(16.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Text(
+                "🧠 Hábitos actuales",
+                style = MaterialTheme.typography.headlineMedium,
+                color = colors.onBackground
+            )
 
-        Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            if (isLoading) {
-                item {
-                    CircularProgressIndicator(modifier = Modifier.padding(8.dp))
-                }
-            } else {
-                items(habits, key = { it.id ?: it.title }) { habit ->
-                    val isCompleted = viewModel.completionStatus[habit.id] ?: false
-                    val isLoadingState = viewModel.loadingStatus.contains(habit.id)
-
-                    HabitItem(
-                        habit = habit,
-                        isCompleted = isCompleted,
-                        isLoading = isLoadingState,
-                        onToggleComplete = { viewModel.toggleHabitCompletion(habit.id ?: "") },
-                        onDeleteRequest = {
-                            habitToDelete = it
-                            showDeleteDialog = true
-                        }
-                    )
-                }
-            }
-
-            // Formulario dentro del scroll (se muestra solo si expandedForm es true, al darle al botón)
-            item {
-                AnimatedVisibility(visible = expandedForm) {
-                    Column {
-                        Spacer(Modifier.height(12.dp))
-                        Text("➕ Crear nuevo hábito", fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(8.dp))
-
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = { Text("Título") },
-                            modifier = Modifier.fillMaxWidth()
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                if (isLoading) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .align(Alignment.CenterHorizontally)
                         )
+                    }
+                } else {
+                    items(habits, key = { it.id ?: it.title }) { habit ->
+                        val isCompleted = viewModel.completionStatus[habit.id] ?: false
+                        val isLoadingState = viewModel.loadingStatus.contains(habit.id)
 
-                        OutlinedTextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = { Text("Descripción") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(modifier = Modifier.padding(vertical = 8.dp)) {
-                            DropdownMenuBox(category, listOf("Agua", "Dormir", "Ejercicio", "Mental")) {
-                                category = it
-                            }
-                            Spacer(Modifier.width(8.dp))
-                            DropdownMenuBox(frequency, listOf("daily", "weekly")) {
-                                frequency = it
-                            }
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        Button(
-                            onClick = {
-                                val habit = Habit(
-                                    title = title,
-                                    description = description,
-                                    category = category,
-                                    frequency = frequency,
-                                    createdAt = Instant.now().toString(),
-                                    userId = Firebase.auth.currentUser?.uid ?: ""
-                                )
-                                viewModel.addHabit(habit)
-                                title = ""
-                                description = ""
-                                expandedForm = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isCompleted) colors.primaryContainer else colors.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(4.dp)
                         ) {
-                            Text("Crear hábito")
+                            HabitItem(
+                                habit = habit,
+                                isCompleted = isCompleted,
+                                isLoading = isLoadingState,
+                                onToggleComplete = {
+                                    viewModel.toggleHabitCompletion(habit.id ?: "")
+                                    syncViewModel.notifyProgressChanged()
+                                },
+                                onDeleteRequest = {
+                                    habitToDelete = it
+                                    showDeleteDialog = true
+                                }
+                            )
                         }
                     }
                 }
+
+                item {
+                    Spacer(modifier = Modifier.height(80.dp)) // espacio inferior
+                }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { expandedForm = !expandedForm },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (expandedForm) "Cancelar" else "➕ Añadir nuevo hábito")
             }
         }
 
-        // Botón de alternar el formulario
-        OutlinedButton(
-            onClick = { expandedForm = !expandedForm },
-            modifier = Modifier.fillMaxWidth()
+        // Formulario superpuesto (no rompe scroll ni lista)
+        AnimatedVisibility(
+            visible = expandedForm,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+                .zIndex(1f)
         ) {
-            Text(if (expandedForm) "Cancelar" else "➕ Añadir nuevo hábito")
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = colors.surfaceVariant,
+                tonalElevation = 4.dp,
+                shadowElevation = 6.dp,
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("➕ Crear nuevo hábito", fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Título") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { description = it },
+                        label = { Text("Descripción") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                        DropdownMenuBox(category, listOf("Agua", "Dormir", "Ejercicio", "Mental")) {
+                            category = it
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        DropdownMenuBox(frequency, listOf("daily", "weekly")) {
+                            frequency = it
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    ElevatedButton(
+                        onClick = {
+                            val habit = Habit(
+                                title = title,
+                                description = description,
+                                category = category,
+                                frequency = frequency,
+                                createdAt = Instant.now().toString(),
+                                userId = Firebase.auth.currentUser?.uid ?: ""
+                            )
+                            viewModel.addHabit(habit)
+                            syncViewModel.notifyProgressChanged()
+
+                            title = ""
+                            description = ""
+                            expandedForm = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Crear hábito")
+                    }
+                }
+            }
         }
 
+        // Diálogo de eliminación
         if (showDeleteDialog && habitToDelete != null) {
+            syncViewModel.notifyProgressChanged()
             AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
+                onDismissRequest = { showDeleteDialog = false
+                                   },
                 title = { Text("¿Eliminar hábito?") },
                 text = {
                     Text("¿Seguro que quieres eliminar \"${habitToDelete?.title}\"? Esta acción no se puede deshacer.")
@@ -185,4 +256,6 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
         }
     }
 }
+
+
 

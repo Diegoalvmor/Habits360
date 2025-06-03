@@ -7,9 +7,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.habits360.features.notifications.worker.HabitReminderWorker
 import com.example.habits360.ui.navigation.BottomNavBar
 import com.example.habits360.ui.navigation.NavGraph
 import com.example.habits360.ui.theme.Habits360Theme
+import java.util.concurrent.TimeUnit
 
 
 class HomeActivity : ComponentActivity() {
@@ -28,6 +32,12 @@ class HomeActivity : ComponentActivity() {
                 }
             }
         }
+        val testRequest = OneTimeWorkRequestBuilder<HabitReminderWorker>()
+            .setInitialDelay(10, TimeUnit.SECONDS)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(testRequest)
+
     }
 }
 
