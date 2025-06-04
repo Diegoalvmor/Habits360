@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -19,7 +20,9 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItem.Habits,
         BottomNavItem.Goals,
         BottomNavItem.Progress,
-        BottomNavItem.Stats
+        BottomNavItem.Stats,
+        BottomNavItem.Settings
+
     )
     NavigationBar {
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -45,4 +48,5 @@ sealed class BottomNavItem(val route: String, val icon: androidx.compose.ui.grap
     object Goals : BottomNavItem("goals", Icons.Default.FitnessCenter, "Objetivos")
     object Progress : BottomNavItem("progress", Icons.Default.Leaderboard, "Progreso")
     object Stats : BottomNavItem("stadistics", Icons.Default.SelfImprovement , "Estadísticas")
+    object Settings : BottomNavItem("settings", Icons.Default.Settings, "Ajustes")
 }

@@ -45,7 +45,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.habits360.features.notifications.worker.HabitReminderWorker
@@ -77,12 +76,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         scheduleHabitReminder()
-        val testRequest = OneTimeWorkRequestBuilder<HabitReminderWorker>()
-            .setInitialDelay(10, TimeUnit.SECONDS)
-            .build()
-
-        WorkManager.getInstance(this).enqueue(testRequest)
-
 
     }
 
