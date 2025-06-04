@@ -1,8 +1,12 @@
 package com.example.habits360.features.profile
 
 import android.annotation.SuppressLint
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.habits360.data.api.ProgressApiService
 import com.example.habits360.data.repository.GoalsRepository
 import com.example.habits360.data.repository.HabitsRepository
 import com.example.habits360.features.goals.model.Goal
@@ -53,7 +57,7 @@ class ProfileViewModel : ViewModel() {
         // =======================
         // 1️⃣ HÁBITO DE AGUA
         // =======================
-        val recommendedLiters = profile.weight * 0.033f
+        val recommendedLiters = profile.weight.toFloat()*0.33f
         val litersFormatted = String.format("%.2f", recommendedLiters)
 
         val existingHabits = habitsRepo.getHabits()
@@ -128,6 +132,47 @@ class ProfileViewModel : ViewModel() {
             )
             goalsRepo.addGoal(goalSleep)
         }
+    }
+
+    private val api = ProgressApiService() // Tú lo puedes tener ya definido
+
+    var profile by mutableStateOf(UserProfile())
+        private set
+
+    var isLoading by mutableStateOf(false)
+    var saveSuccessSettings by mutableStateOf(false)
+        private set
+
+    fun loadProfile() {
+        viewModelScope.launch {
+            isLoading = true
+            profile = api.getProfile()!!
+            isLoading = false
+        }
+    }
+
+    fun updateField(field: String, value: Any) {
+        profile = when (field) {
+            "birthdate" -> profile.copy(birthdate = value as String)
+            "gender" -> profile.copy(gender = value as String)
+            "goal" -> profile.copy(goal = value as String)
+            "height" -> profile.copy(height = value.toString().toIntOrNull() ?: profile.height)
+            "weight" -> profile.copy(weight = value.toString().toIntOrNull() ?: profile.weight)
+            else -> profile
+        }
+    }
+
+    fun updateProfile() {
+        viewModelScope.launch {
+            isLoading = true
+            val success = api.updateProfile(profile)
+            if (success) saveSuccessSettings = true
+            isLoading = false
+        }
+    }
+
+    fun resetSaveEvent() {
+        saveSuccessSettings = false
     }
 
 

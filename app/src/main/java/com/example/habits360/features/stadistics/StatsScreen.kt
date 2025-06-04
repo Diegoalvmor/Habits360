@@ -53,7 +53,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
 
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Progreso por categoría",
+        Text("\uD83D\uDCC8 Progreso por categoría \uD83D\uDCC8",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.align(Alignment.CenterHorizontally) )
         Spacer(Modifier.height(16.dp))
@@ -155,7 +155,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
         )
 
         Spacer(Modifier.height(32.dp))
-        Text("Racha acumulativa",
+        Text("\uD83D\uDCAA Racha acumulativa ✌\uFE0F",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(16.dp))

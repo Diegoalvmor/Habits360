@@ -2,7 +2,9 @@ package com.example.habits360.features.settings
 
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,9 +12,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,13 +29,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.habits360.MainActivity
+import com.example.habits360.features.profile.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -35,9 +47,22 @@ fun SettingsScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val profileViewModel: ProfileViewModel = viewModel()
+    val profile = profileViewModel.profile
+    val isSaving = profileViewModel.isLoading
+    var saveSuccess = profileViewModel.saveSuccessSettings
 
     LaunchedEffect(Unit) {
         viewModel.loadSettings(context)
+        profileViewModel.loadProfile()
+
+    }
+
+    LaunchedEffect(saveSuccess) {
+        if (saveSuccess) {
+            Toast.makeText(context, "✅ Cambios guardados", Toast.LENGTH_SHORT).show()
+            profileViewModel.resetSaveEvent()
+        }
     }
 
     val reminderEnabled by viewModel.reminderEnabled
@@ -52,6 +77,69 @@ fun SettingsScreen(
     ) {
         Text("⚙️ Ajustes", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(32.dp))
+        Column {
+            Text("👤 Tu perfil", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = profile.birthdate,
+                onValueChange = { profileViewModel.updateField("birthdate", it) },
+                label = { Text("Fecha de nacimiento (YYYY-MM-DD)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            DropdownSelector(
+                label = "Género",
+                options = listOf("masculino", "femenino", "otro"),
+                selected = profile.gender,
+                onSelected = { profileViewModel.updateField("gender", it) }
+
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            DropdownSelector(
+                label = "Objetivo",
+                options = listOf("mantener_salud", "ganar_masa", "perder_peso"),
+                selected = profile.goal,
+                onSelected = { profileViewModel.updateField("goal", it) }
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = if (profile.height == 0) "" else profile.height.toString(),
+                onValueChange = { profileViewModel.updateField("height", it) },
+                label = { Text("Altura (cm)") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = if (profile.weight == 0) "" else profile.weight.toString(),
+                onValueChange = { profileViewModel.updateField("weight", it) },
+                label = { Text("Peso (kg)") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = { profileViewModel.updateProfile()
+                          },
+                enabled = !isSaving,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("💾 Guardar cambios")
+            }
+
+            Spacer(Modifier.height(24.dp))
+        }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -113,6 +201,42 @@ fun SettingsScreen(
 
         Spacer(Modifier.height(24.dp))
         Text("Versión 1.0.0", style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@Composable
+fun DropdownSelector(
+    label: String,
+    options: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        OutlinedTextField(
+            value = selected,
+            onValueChange = {},
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+            enabled = true,
+            trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
 

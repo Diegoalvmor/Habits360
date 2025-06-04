@@ -1,6 +1,7 @@
 package com.example.habits360.data.api
 
 import android.util.Log
+import com.example.habits360.features.profile.model.UserProfile
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
 import com.example.habits360.features.stadistics.model.DailySummary
@@ -159,7 +160,7 @@ class ProgressApiService {
             client.newCall(postRequest).execute().close()
         }
 
-        // ✅ Sync objetivo relacionado
+        // Sync objetivo relacionado
         val goalSyncJson = """
         {
             "habitId": "$habitId",
@@ -222,6 +223,49 @@ class ProgressApiService {
         val type = object : TypeToken<List<DailySummary>>() {}.type
         return@withContext gson.fromJson<List<DailySummary>>(body, type)
     }
+
+
+    //Para la gestión del perfil en "ajustes"
+
+    suspend fun getProfile(): UserProfile? = withContext(Dispatchers.IO) {
+        val token = Firebase.auth.currentUser?.getIdToken(true)?.await()?.token ?: return@withContext null
+        val urlpers = "$baseUrl/stats/user"
+        val request = Request.Builder()
+            .url(urlpers)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = OkHttpClient().newCall(request).execute()
+        if (!response.isSuccessful) return@withContext null
+
+        val body = response.body?.string()
+        Log.d("GET_PROFILE", "➡️ Respuesta: $body")
+
+        return@withContext Gson().fromJson(body, UserProfile::class.java)
+    }
+
+
+    suspend fun updateProfile(profile: UserProfile): Boolean = withContext(Dispatchers.IO) {
+        val token = Firebase.auth.currentUser?.getIdToken(true)?.await()?.token ?: return@withContext false
+
+        val json = Gson().toJson(profile)
+        val requestBody = json.toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("$baseUrl/stats/user")
+            .put(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        val response = OkHttpClient().newCall(request).execute()
+        val responseBody = response.body?.string()
+        Log.d("UPDATE_PROFILE", "⬆️ Sent: $json")
+        Log.d("UPDATE_PROFILE", "⬇️ Response (${response.code}): $responseBody")
+
+        return@withContext response.isSuccessful
+    }
+
 
 
 

@@ -3,6 +3,7 @@ package com.example.habits360.features.goals
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,15 +12,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,11 +48,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -99,36 +113,36 @@ fun GoalsScreen(
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
 
+        // 🔹 HEADER
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "Objetivos",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                "🎯 Objetivos \uD83C\uDFAF",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
             )
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Mostrar completados")
+                Text("Completados  ")
                 Switch(checked = showCompleted, onCheckedChange = { showCompleted = it })
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
 
+        // 🔹 OBJETIVOS ACTIVOS
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(currentGoals) { goal ->
-
-
-                GoalCard(goal, onDelete = { viewModel.deleteGoal(goal.id ?: "") })
+                GoalCard(goal = goal, onDelete = { viewModel.deleteGoal(goal.id ?: "") })
             }
         }
 
+        // 🔹 OBJETIVOS COMPLETADOS
         AnimatedVisibility(visible = showCompleted) {
             Column {
-                Text("🎉 Objetivos completados", fontWeight = FontWeight.SemiBold)
+                Text("🎉 Completados", fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(8.dp))
                 LazyColumn {
                     items(completedGoals) { goal ->
@@ -142,7 +156,7 @@ fun GoalsScreen(
 
         AnimatedVisibility(visible = expandedForm) {
             Column {
-                Text("➕ Crear nuevo objetivo", fontWeight = FontWeight.SemiBold)
+                Text("➕ Nuevo objetivo", fontWeight = FontWeight.SemiBold)
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -155,9 +169,9 @@ fun GoalsScreen(
                     label = { Text("Días objetivo") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(6.dp))
-                Text("Hábito asociado:")
-                LazyRow {
+                Spacer(Modifier.height(8.dp))
+                Text("Selecciona hábito:")
+                LazyRow(modifier = Modifier.padding(top = 4.dp)) {
                     items(habits) { habit ->
                         AssistChip(
                             onClick = { selectedHabit = habit },
@@ -197,21 +211,32 @@ fun GoalsScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear")
+                    Spacer(Modifier.width(6.dp))
                     Text("Crear objetivo")
                 }
             }
         }
 
+        // 🔹 BOTÓN FLIP FORM
         OutlinedButton(
             onClick = { expandedForm = !expandedForm },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (expandedForm) "Cancelar" else "➕ Añadir nuevo objetivo")
+            Icon(
+                imageVector = if (expandedForm) Icons.Default.Close else Icons.Default.Add,
+                contentDescription = null
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(if (expandedForm) "Cancelar" else "Añadir nuevo objetivo")
         }
 
         Spacer(Modifier.height(8.dp))
 
+        // 🔹 TEST BUTTON
         Button(onClick = { obtenerIdToken() }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.Security, contentDescription = null)
+            Spacer(Modifier.width(6.dp))
             Text("Obtener ID Token")
         }
 
@@ -270,40 +295,90 @@ fun GoalsScreen(
         }
     }
 }
-
 @Composable
-fun GoalCard(goal: Goal, completed: Boolean = false, onDelete: () -> Unit) {
+fun GoalCard(
+    goal: Goal,
+    completed: Boolean = false,
+    onDelete: () -> Unit
+) {
+    val progress = remember(goal.progress, goal.targetDays) {
+        goal.progress / goal.targetDays.toFloat().coerceAtLeast(0.01f)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(Modifier.padding(12.dp)) {
-            Text(goal.title, fontWeight = FontWeight.Bold)
-            Text("Avance: ${goal.progress} / ${goal.targetDays}")
-            if (goal.achieved) {
-                Text("✅ ¡Conseguido!", color = Color.Green)
-            } else {
-                LinearProgressIndicator(
-                    progress = { goal.progress / goal.targetDays.toFloat() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .padding(top = 4.dp),
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Text(
+                        goal.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Text(
+                        "Avance: ${goal.progress} / ${goal.targetDays}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
+                }
+
+                if (goal.achieved) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "Conseguido",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = if (goal.achieved) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            AnimatedVisibility(visible = completed || goal.achieved) {
+                Text(
+                    "✅ ¡Conseguido!",
+                    color = Color(0xFF4CAF50),
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
-
-            Button(
+            OutlinedButton(
                 onClick = { onDelete() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Magenta),
+                modifier = Modifier.padding(top = 8.dp).align(Alignment.End)
             ) {
-                Text("Eliminar", color = Color.White)
+                Icon(Icons.Default.Delete, contentDescription = "Eliminar")
+                Spacer(Modifier.width(4.dp))
+                Text("Eliminar")
             }
         }
     }
 }
+
 
 fun obtenerIdToken() {
     val user = FirebaseAuth.getInstance().currentUser
