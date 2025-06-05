@@ -13,8 +13,6 @@ import com.example.habits360.data.repository.HabitsRepository
 import com.example.habits360.features.goals.model.Goal
 import com.example.habits360.features.habits.model.Habit
 import com.example.habits360.features.profile.model.UserProfile
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -25,11 +23,7 @@ class ProfileViewModel : ViewModel() {
     private val goalsRepo = GoalsRepository()
     private val habitsRepo = HabitsRepository()
 
-    private val _saveSuccess = MutableStateFlow(false)
-    val saveSuccess: StateFlow<Boolean> = _saveSuccess
 
-    private val _navigateToHome = MutableStateFlow(false)
-    val navigateToHome: StateFlow<Boolean> = _navigateToHome
 
     var isLoading by mutableStateOf(false)
         private set
@@ -39,11 +33,6 @@ class ProfileViewModel : ViewModel() {
         repository.saveUserProfile(profile)
         createAutoHabitsAndGoals(profile)
     }
-
-    fun resetNavigation() {
-        _navigateToHome.value = false
-    }
-
 
 
     private fun calculateAge(birthdate: String): Int {

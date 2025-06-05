@@ -1,5 +1,6 @@
 package com.example.habits360.features.stadistics
 
+import android.view.MotionEvent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.habits360.R
+import com.example.habits360.utils.CustomMarkerViewSolo
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
@@ -27,6 +30,8 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.listener.ChartTouchListener
+import com.github.mikephil.charting.listener.OnChartGestureListener
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -114,6 +119,29 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                     }
                 }
 
+
+                //MarkerView para mostrar los valores al tocar
+                val markerView = CustomMarkerViewSolo(context, R.layout.marker_view_stats)
+                markerView.chartView = chart // Asocia el marcador con el gráfico
+                chart.marker = markerView
+
+                //El double tap listener para resetear el zoom
+                chart.onChartGestureListener = object : OnChartGestureListener {
+                    override fun onChartDoubleTapped(me: MotionEvent?) {
+                        chart.fitScreen() // Restaura el zoom al estado original
+                    }
+
+                    // Otros métodos pueden dejarse vacíos si no se utilizan, deben estar
+                    override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                    override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                    override fun onChartLongPressed(me: MotionEvent?) {}
+                    override fun onChartSingleTapped(me: MotionEvent?) {}
+                    override fun onChartFling(me1: MotionEvent?, me2: MotionEvent?, velocityX: Float, velocityY: Float) {}
+                    override fun onChartScale(me: MotionEvent?, scaleX: Float, scaleY: Float) {}
+                    override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {}
+                }
+
+
                 chart.data = LineData(dataSets)
 
                 chart.legend.apply {
@@ -165,6 +193,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
         AndroidView(factory = { ctx ->
             val chart = LineChart(ctx)
 
+
             chart.setTouchEnabled(true)
             chart.setPinchZoom(true)
             chart.axisLeft.axisMinimum = 0f
@@ -173,6 +202,11 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
             chart.description.isEnabled = false
             chart.setExtraOffsets(10f, 10f, 10f, 10f)
             chart.animateX(600, Easing.EaseInOutQuad)
+            chart.isDoubleTapToZoomEnabled = false
+
+
+
+
 
             chart
         }, update = { chart ->
@@ -197,6 +231,29 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
 
             chart.data = LineData(dataSet)
 
+
+            val markerView = CustomMarkerViewSolo(context, R.layout.marker_view_stats)
+            markerView.chartView = chart // Asocia el marcador con el gráfico
+            chart.marker = markerView
+
+            chart.onChartGestureListener = object : OnChartGestureListener {
+                override fun onChartDoubleTapped(me: MotionEvent?) {
+                    chart.fitScreen()
+                // Restaura el zoom al estado original
+                }
+
+                // Otros métodos pueden dejarse vacíos si no se utilizan, deben estar
+                override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                override fun onChartLongPressed(me: MotionEvent?) {}
+                override fun onChartSingleTapped(me: MotionEvent?) {}
+                override fun onChartFling(me1: MotionEvent?, me2: MotionEvent?, velocityX: Float, velocityY: Float) {}
+                override fun onChartScale(me: MotionEvent?, scaleX: Float, scaleY: Float) {}
+                override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {}
+            }
+
+
+
             chart.xAxis.apply {
                 position = XAxis.XAxisPosition.BOTTOM
                 textSize = 12f
@@ -215,6 +272,8 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                 orientation = Legend.LegendOrientation.HORIZONTAL
                 textColor = textColorPerso.toArgb()
             }
+
+
 
             chart.invalidate()
         }, modifier = Modifier
