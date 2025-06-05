@@ -20,6 +20,8 @@
         tools:targetApi="tiramisu" >
         <activity android:name=".HomeActivity" />
         <activity android:name=".features.profile.ProfileSetupActivity" />
+        <activity android:name=".home.LoadingActivity" />
+
 
         <activity
             android:name=".MainActivity"

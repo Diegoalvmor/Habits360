@@ -20,8 +20,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,15 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.habits360.HomeActivity
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavHostController
 import com.example.habits360.features.profile.model.UserProfile
+import com.example.habits360.home.LoadingActivity
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 @Composable
-fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel()) {
+fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel(), navController: NavHostController) {
     val context = LocalContext.current
     var weight by remember { mutableStateOf("") }
     var height by remember { mutableStateOf("") }
@@ -48,17 +48,10 @@ fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel()) {
     var birthdate by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    if (saveSuccess) {
-        LaunchedEffect(Unit) {
-            context.startActivity(
-                Intent(context, HomeActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-            )
-        }
-    }
+
+
 
     if (showDatePicker) {
         ShowDatePickerDialog(
@@ -71,83 +64,97 @@ fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel()) {
     }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("🧬 Tu Perfil de Bienestar", style = MaterialTheme.typography.headlineMedium)
 
-        OutlinedButton(
-            onClick = { showDatePicker = true },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(if (birthdate.isBlank()) "Selecciona tu fecha de nacimiento" else "Nacimiento: $birthdate")
-        }
-        if (showDatePicker) {
-            ShowDatePickerDialog(
-                onDateSelected = { date ->
-                    birthdate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    showDatePicker = false
-                },
-                onDismiss = { showDatePicker = false }
-            )
-        }
+            Text("🧬 Tu Perfil de Bienestar", style = MaterialTheme.typography.headlineMedium)
 
-
-        OutlinedTextField(
-            value = weight,
-            onValueChange = { weight = it },
-            label = { Text("Peso (kg)") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = height,
-            onValueChange = { height = it },
-            label = { Text("Altura (cm)") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text("Género")
-        Row {
-            listOf("masculino", "femenino", "otro").forEach {
-                FilterChip(
-                    selected = gender == it,
-                    onClick = { gender = it },
-                    label = { Text(it.replaceFirstChar { c -> c.uppercase() }) },
-                    modifier = Modifier.padding(end = 8.dp)
+            OutlinedButton(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (birthdate.isBlank()) "Selecciona tu fecha de nacimiento" else "Nacimiento: $birthdate")
+            }
+            if (showDatePicker) {
+                ShowDatePickerDialog(
+                    onDateSelected = { date ->
+                        birthdate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        showDatePicker = false
+                    },
+                    onDismiss = { showDatePicker = false }
                 )
             }
-        }
 
-        Text("Objetivo")
-        GoalDropdownMenu(goal, onOptionSelected = { goal = it })
 
-        Button(
-            onClick = {
-                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                val profile = UserProfile(
-                    userId = uid,
-                    birthdate = birthdate,
-                    weight = weight.toFloatOrNull() ?: 0f,
-                    height = height.toFloatOrNull() ?: 0f,
-                    gender = gender,
-                    goal = goal
-                )
-                viewModel.saveProfile(profile)
-            },
-            enabled = birthdate.isNotBlank() && weight.isNotBlank() && height.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Guardar perfil")
+            OutlinedTextField(
+                value = weight,
+                onValueChange = { weight = it },
+                label = { Text("Peso (kg)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = height,
+                onValueChange = { height = it },
+                label = { Text("Altura (cm)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Text("Género")
+            Row {
+                listOf("masculino", "femenino", "otro").forEach {
+                    FilterChip(
+                        selected = gender == it,
+                        onClick = { gender = it },
+                        label = { Text(it.replaceFirstChar { c -> c.uppercase() }) },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            }
+
+            Text("Objetivo")
+            GoalDropdownMenu(goal, onOptionSelected = { goal = it })
+
+            Button(
+                onClick = {
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                    val profile = UserProfile(
+                        userId = uid,
+                        birthdate = birthdate,
+                        weight = weight.toFloatOrNull() ?: 0f,
+                        height = height.toFloatOrNull() ?: 0f,
+                        gender = gender,
+                        goal = goal
+                    )
+
+                    val intent = Intent(context, LoadingActivity::class.java).apply {
+                        putExtra("userId", profile.userId)
+                        putExtra("birthdate", profile.birthdate)
+                        putExtra("weight", profile.weight)
+                        putExtra("height", profile.height)
+                        putExtra("gender", profile.gender)
+                        putExtra("goal", profile.goal)
+                    }
+                    context.startActivity(intent)
+
+
+                },
+                enabled = birthdate.isNotBlank() && weight.isNotBlank() && height.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Guardar perfil")
+            }
         }
     }
-}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

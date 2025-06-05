@@ -368,7 +368,7 @@ fun GoalCard(
 
             OutlinedButton(
                 onClick = { onDelete() },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Magenta),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.padding(top = 8.dp).align(Alignment.End)
             ) {
                 Icon(Icons.Default.Delete, contentDescription = "Eliminar")

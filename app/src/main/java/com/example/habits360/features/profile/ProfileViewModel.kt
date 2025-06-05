@@ -1,6 +1,7 @@
 package com.example.habits360.features.profile
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,16 +28,24 @@ class ProfileViewModel : ViewModel() {
     private val _saveSuccess = MutableStateFlow(false)
     val saveSuccess: StateFlow<Boolean> = _saveSuccess
 
-    fun saveProfile(profile: UserProfile) {
-        viewModelScope.launch {
-            val result = repository.saveUserProfile(profile)
-            _saveSuccess.value = result
+    private val _navigateToHome = MutableStateFlow(false)
+    val navigateToHome: StateFlow<Boolean> = _navigateToHome
 
-            if (result) {
-                createAutoHabitsAndGoals(profile)
-            }
-        }
+    var isLoading by mutableStateOf(false)
+        private set
+
+
+    suspend fun saveProfile(profile: UserProfile) {
+        repository.saveUserProfile(profile)
+        createAutoHabitsAndGoals(profile)
     }
+
+    fun resetNavigation() {
+        _navigateToHome.value = false
+    }
+
+
+
     private fun calculateAge(birthdate: String): Int {
         return try {
             val birth = LocalDate.parse(birthdate)
@@ -48,108 +57,196 @@ class ProfileViewModel : ViewModel() {
     }
 
 
+
+
     @SuppressLint("DefaultLocale")
-    private suspend fun createAutoHabitsAndGoals(profile: UserProfile) {
+    suspend fun createAutoHabitsAndGoals(profile: UserProfile) {
         val userId = profile.userId
         val age = calculateAge(profile.birthdate)
-
-
-        // =======================
-        // 1️⃣ HÁBITO DE AGUA
-        // =======================
-        val recommendedLiters = profile.weight.toFloat()*0.33f
-        val litersFormatted = String.format("%.2f", recommendedLiters)
+        val goalType = profile.goal.lowercase()
+        val gender = profile.gender.lowercase()
+        val weight = profile.weight.toFloat()
+        val height = profile.height.toFloat()
 
         val existingHabits = habitsRepo.getHabits()
+        val existingGoals = goalsRepo.getGoals()
 
-        val aguaHabit = existingHabits.find { it.category == "Agua" && it.title.contains("agua", ignoreCase = true) }
-            ?: run {
-                val newHabit = Habit(
+
+
+        suspend fun createHabitIfNotExists(title: String, description: String, category: String, frequency: String = "daily"): Habit {
+            return existingHabits.find {
+                it.category == category && it.title.contains(title.substringBefore(" "), ignoreCase = true)
+            } ?: run {
+                val habit = Habit(
                     userId = userId,
-                    title = "Beber $litersFormatted litros de agua al día",
-                    description = "Objetivo diario recomendado según tu peso",
-                    category = "Agua",
-                    frequency = "daily",
+                    title = title,
+                    description = description,
+                    category = category,
+                    frequency = frequency,
                     createdAt = Instant.now().toString()
                 )
-                habitsRepo.addHabit(newHabit)
+                val newHabit = habitsRepo.addHabit(habit)
+                habit
+                if (newHabit != null) {
+                    newHabit
+                } else {
+                    habit
+                    throw Exception("Error al crear el hábito: $title")
+                }
             }
+        }
 
-        val updatedHabits = habitsRepo.getHabits()
-        val aguaHabitFinal = updatedHabits.find { it.category == "Agua" && it.title.contains("agua", ignoreCase = true) }
+        suspend fun createGoalIfNotExists(habit: Habit, title: String, days: Int = 7) {
+            Log.d("AutoGoal", "Verificando objetivo para hábito: ${habit.title} con ID: ${habit.id}")
 
-        val existingGoals = goalsRepo.getGoals()
-        if (aguaHabitFinal != null && existingGoals.none { it.habitId == aguaHabitFinal.id }) {
-            val goalAgua = Goal(
-                userId = userId,
-                title = "Beber agua diariamente por 7 días",
-                habitId = aguaHabitFinal.id ?: return,
-                targetDays = 7,
-                progress = 0,
-                achieved = false
-            )
-            goalsRepo.addGoal(goalAgua)
+            if (existingGoals.none { it.habitId == habit.id }) {
+                val goal = Goal(
+                    userId = userId,
+                    title = title,
+                    habitId = habit.id ?: return,
+                    targetDays = days,
+                    progress = 0,
+                    achieved = false
+                )
+                goalsRepo.addGoal(goal)
+            }
         }
 
         // =======================
-        // 2️⃣ HÁBITO DE SUEÑO
+        // 1️⃣ Agua
         // =======================
+        val liters = weight * 0.033f
+        val aguaTitle = "Beber %.2f litros de agua al día".format(liters)
+        val aguaHabit = createHabitIfNotExists(
+            title = aguaTitle,
+            description = "Basado en tu peso actual",
+            category = "Agua"
+        )
+        createGoalIfNotExists(aguaHabit, "Beber agua diariamente por 7 días")
 
-        // Base hours
-        val baseHours = when {
+        // =======================
+        // 2️⃣ Dormir
+        // =======================
+        val baseSleep = when {
             age < 18 -> 8.5f
             age in 18..64 -> 8f
             else -> 7f
         }
+        val adjustedSleep = if (gender == "femenino") baseSleep + 1f else baseSleep
+        val sleepTitle = "Dormir %.1f horas cada noche".format(adjustedSleep)
 
-        val adjustedHours = if (profile.gender.lowercase() == "femenino") baseHours + 1f else baseHours
-        val hoursFormatted = String.format("%.1f", adjustedHours)
+        val sleepHabit = createHabitIfNotExists(
+            title = sleepTitle,
+            description = "Basado en tu edad y género",
+            category = "Dormir"
+        )
+        createGoalIfNotExists(sleepHabit, "Dormir bien durante 7 días seguidos")
 
-        val sleepHabit = updatedHabits.find { it.category == "Dormir" && it.title.contains("dormir", ignoreCase = true) }
-            ?: run {
-                val newHabit = Habit(
-                    userId = userId,
-                    title = "Dormir $hoursFormatted horas cada noche",
-                    description = "Según tu edad y género",
-                    category = "Dormir",
-                    frequency = "daily",
-                    createdAt = Instant.now().toString()
+        // =======================
+        // 3️⃣ Personalizado por objetivo
+        // =======================
+        when (goalType) {
+            "ganar_masa" -> {
+                val strengthHabit = createHabitIfNotExists(
+                    title = "Entrenar fuerza 4 veces por semana",
+                    description = "Estimula el crecimiento muscular con ejercicios compuestos",
+                    category = "Ejercicio",
+                    frequency = "weekly"
                 )
-                habitsRepo.addHabit(newHabit)
+                createGoalIfNotExists(strengthHabit, "Entrenar fuerza 4 veces en una semana")
+
+                val proteinHabit = createHabitIfNotExists(
+                    title = "Consumir 3 comidas ricas en proteínas al día",
+                    description = "Maximiza la síntesis proteica diaria",
+                    category = "Nutrición"
+                )
+                createGoalIfNotExists(proteinHabit, "Alimentación proteica durante 7 días")
+
+                val restHabit = createHabitIfNotExists(
+                    title = "Tomar 1 día de descanso activo",
+                    description = "Favorece la recuperación muscular",
+                    category = "Recuperación",
+                    frequency = "weekly"
+                )
+                createGoalIfNotExists(restHabit, "Realizar descanso activo esta semana")
             }
 
-        val finalHabits = habitsRepo.getHabits()
-        val sleepHabitFinal = finalHabits.find { it.category == "Dormir" && it.title.contains("dormir", ignoreCase = true) }
+            "bajar_peso" -> {
+                val cardioHabit = createHabitIfNotExists(
+                    title = "Realizar 30 minutos de cardio diario",
+                    description = "Mejora el déficit calórico y cardiovascular",
+                    category = "Ejercicio"
+                )
+                createGoalIfNotExists(cardioHabit, "Hacer cardio 7 días seguidos")
 
-        if (sleepHabitFinal != null && existingGoals.none { it.habitId == sleepHabitFinal.id }) {
-            val goalSleep = Goal(
-                userId = userId,
-                title = "Dormir bien durante 7 días seguidos",
-                habitId = sleepHabitFinal.id ?: return,
-                targetDays = 7,
-                progress = 0,
-                achieved = false
-            )
-            goalsRepo.addGoal(goalSleep)
+                val stepsHabit = createHabitIfNotExists(
+                    title = "Caminar 10.000 pasos diarios",
+                    description = "Fomenta gasto calórico diario",
+                    category = "Actividad física"
+                )
+                createGoalIfNotExists(stepsHabit, "10.000 pasos diarios por 7 días")
+
+                val sugarHabit = createHabitIfNotExists(
+                    title = "Evitar azúcares añadidos",
+                    description = "Controla calorías y energía estable",
+                    category = "Nutrición"
+                )
+                createGoalIfNotExists(sugarHabit, "Reducir azúcar durante 7 días")
+            }
+
+            "mantener_salud" -> {
+                val mobilityHabit = createHabitIfNotExists(
+                    title = "Realizar 10 minutos de estiramiento diario",
+                    description = "Mejora movilidad y previene lesiones",
+                    category = "Bienestar"
+                )
+                createGoalIfNotExists(mobilityHabit, "Hacer estiramiento 7 días seguidos")
+
+                val meditationHabit = createHabitIfNotExists(
+                    title = "Meditar 5 minutos al día",
+                    description = "Fomenta claridad mental y manejo del estrés",
+                    category = "Mental"
+                )
+                createGoalIfNotExists(meditationHabit, "Meditar diariamente por 7 días")
+
+                val fruitsHabit = createHabitIfNotExists(
+                    title = "Consumir 3 porciones de frutas",
+                    description = "Aumenta ingesta de fibra y vitaminas",
+                    category = "Nutrición"
+                )
+                createGoalIfNotExists(fruitsHabit, "Consumir frutas durante 7 días")
+            }
+
+            else -> {
+
+            }
         }
     }
+
+
 
     private val api = ProgressApiService() // Tú lo puedes tener ya definido
 
     var profile by mutableStateOf(UserProfile())
         private set
 
-    var isLoading by mutableStateOf(false)
     var saveSuccessSettings by mutableStateOf(false)
         private set
 
     fun loadProfile() {
         viewModelScope.launch {
             isLoading = true
-            profile = api.getProfile()!!
+            val result = api.getProfile()
+            if (result != null) {
+                profile = result
+            } else {
+                Log.e("ProfileViewModel", "❌ Error: getProfile() devolvió null")
+                // Puedes también establecer un estado de error o mensaje
+            }
             isLoading = false
         }
     }
+
 
     fun updateField(field: String, value: Any) {
         profile = when (field) {
@@ -174,6 +271,8 @@ class ProfileViewModel : ViewModel() {
     fun resetSaveEvent() {
         saveSuccessSettings = false
     }
+
+
 
 
 

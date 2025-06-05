@@ -20,15 +20,7 @@ class FirebaseRepository {
         }
     }
 
-    suspend fun getUserProfile(): UserProfile? {
-        val uid = auth.currentUser?.uid ?: return null
-        return try {
-            db.collection("users").document(uid).collection("Profile").document("data")
-                .get().await().toObject(UserProfile::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
+
 
     suspend fun isUserProfileComplete(): Boolean {
         val uid = auth.currentUser?.uid ?: return false

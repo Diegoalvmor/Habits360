@@ -12,11 +12,14 @@ import com.example.habits360.data.repository.HabitsRepository
 import com.example.habits360.data.repository.ProgressRepository
 import com.example.habits360.features.goals.GoalsViewModel
 import com.example.habits360.features.habits.model.Habit
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) : ViewModel() {
     var habits by mutableStateOf<List<Habit>>(emptyList())
         private set
+
+
 
     var loading by mutableStateOf(false)
         private set
@@ -24,12 +27,25 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
     fun loadHabits() {
         viewModelScope.launch {
             loading = true
-            habits = repo.getHabits()
-            updateAllCompletionStatuses()
+            val loadedHabits = repo.getHabits()
+            habits = loadedHabits // Esto sí desencadena recomposición si Compose lo observa
+            delay(500)
 
+            // ✅ Esperar explícitamente antes de procesar
+            _completionStatus.clear()
+            _loadingStatus.clear()
+
+            loadedHabits.forEach { habit ->
+                val id = habit.id ?: return@forEach
+                _loadingStatus.add(id)
+                val done = progressRepo.isHabitCompletedToday(id)
+                _completionStatus[id] = done
+                _loadingStatus.remove(id)
+            }
             loading = false
         }
     }
+
 
     fun addHabit(habit: Habit) {
         viewModelScope.launch {

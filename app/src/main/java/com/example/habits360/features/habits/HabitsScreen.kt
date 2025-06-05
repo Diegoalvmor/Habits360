@@ -76,9 +76,10 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
 
     LaunchedEffect(Unit) {
         viewModel.loadHabits()
-        viewModel.habits.forEach { viewModel.updateCompletionStatus(it.id ?: "") }
         viewModel.attachGoalsViewModel(goalsViewModel)
     }
+
+
 
     Box(
         modifier = Modifier
@@ -88,7 +89,7 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Text(
-                "🧠 Hábitos actuales",
+                "🧠 Hábitos actuales ✌\uFE0F",
                 style = MaterialTheme.typography.headlineMedium,
                 color = colors.onBackground
             )
@@ -108,7 +109,18 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
                                 .align(Alignment.CenterHorizontally)
                         )
                     }
-                } else {
+                }
+                else if (habits.isEmpty()) {
+                    item {
+                        Text(
+                            "No tienes hábitos o aún se están cargando. \n ¡Prueba a crear uno nuevo o refrescar la página!",
+                            color = colors.onBackground,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+
+                else {
                     items(habits, key = { it.id ?: it.title }) { habit ->
                         val isCompleted = viewModel.completionStatus[habit.id] ?: false
                         val isLoadingState = viewModel.loadingStatus.contains(habit.id)
