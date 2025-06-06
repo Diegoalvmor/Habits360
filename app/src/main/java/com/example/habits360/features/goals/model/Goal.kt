@@ -8,6 +8,6 @@ data class Goal(
     val targetDays: Int = 0,
     val progress: Int = 0,
     val achieved: Boolean = false,
-    val celebrated: Boolean = false // Nuevo campo persistente para poder separar los objetivos completados y poder ejecutar una animación para motivar al usuario
+    val celebrated: Boolean = false // Campo persistente para poder separar los objetivos completados y poder ejecutar una animación para motivar al usuario
 )
 

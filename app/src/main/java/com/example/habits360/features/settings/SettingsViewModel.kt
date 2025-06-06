@@ -2,6 +2,7 @@ package com.example.habits360.features.settings
 
 import android.content.Context
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.work.ExistingWorkPolicy
@@ -16,17 +17,17 @@ class SettingsViewModel : ViewModel() {
     private val _reminderEnabled = mutableStateOf(true)
     val reminderEnabled: State<Boolean> get() = _reminderEnabled
 
-    private val _reminderHour = mutableStateOf(9)
+    private val _reminderHour = mutableIntStateOf(9)
     val reminderHour: State<Int> get() = _reminderHour
 
-    private val _reminderMinute = mutableStateOf(0)
+    private val _reminderMinute = mutableIntStateOf(0)
     val reminderMinute: State<Int> get() = _reminderMinute
 
     fun loadSettings(context: Context) {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         _reminderEnabled.value = prefs.getBoolean("reminderEnabled", true)
-        _reminderHour.value = prefs.getInt("reminderHour", 9)
-        _reminderMinute.value = prefs.getInt("reminderMinute", 0)
+        _reminderHour.intValue = prefs.getInt("reminderHour", 9)
+        _reminderMinute.intValue = prefs.getInt("reminderMinute", 0)
     }
 
     fun setReminderEnabled(context: Context, enabled: Boolean) {
@@ -36,14 +37,14 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun setReminderTime(context: Context, hour: Int, minute: Int) {
-        _reminderHour.value = hour
-        _reminderMinute.value = minute
+        _reminderHour.intValue = hour
+        _reminderMinute.intValue = minute
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         prefs.edit().putInt("reminderHour", hour).putInt("reminderMinute", minute).apply()
     }
 
     fun scheduleReminder(context: Context) {
-        val delay = calculateDelay(_reminderHour.value, _reminderMinute.value)
+        val delay = calculateDelay(_reminderHour.intValue, _reminderMinute.intValue)
 
         val request = OneTimeWorkRequestBuilder<HabitReminderWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
@@ -52,7 +53,7 @@ class SettingsViewModel : ViewModel() {
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             "DailyHabitReminder",
-            ExistingWorkPolicy.REPLACE, // 👈 Reemplaza si ya existía
+            ExistingWorkPolicy.REPLACE, // Lo reemplaza si ya existía
             request
         )
     }

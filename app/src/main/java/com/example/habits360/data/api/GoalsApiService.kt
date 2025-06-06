@@ -94,31 +94,6 @@ class GoalsApiService {
     }
 
 
-    /*
-    //Para poder controlar la animación de los objetivos completados
-    suspend fun markGoalAsCelebrated(id: String) = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext
-        val json = """{"celebrated": true}"""
-        val requestBody = json.toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("$baseUrl/goals/$id")
-            .put(requestBody)
-            .addHeader("Authorization", "Bearer $token")
-            .build()
-
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) {
-            Log.e("GoalsApiService", "Error actualizando goal: ${response.code} ${response.message}")
-        } else {
-            Log.d("GoalsApiService", "Goal celebrado correctamente")
-        }
-        response.close()
-    }
-
-     */
-
-
 
 
 }

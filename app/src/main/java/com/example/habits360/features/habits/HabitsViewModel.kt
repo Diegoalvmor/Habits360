@@ -31,17 +31,18 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
             habits = loadedHabits // Esto sí desencadena recomposición si Compose lo observa
             delay(500)
 
-            // ✅ Esperar explícitamente antes de procesar
+            //  Esperar explícitamente antes de procesar
             _completionStatus.clear()
             _loadingStatus.clear()
 
             loadedHabits.forEach { habit ->
                 val id = habit.id ?: return@forEach
                 _loadingStatus.add(id)
-                val done = progressRepo.isHabitCompletedToday(id)
+                val done = progressRepo.isHabitCompleted(habit)
                 _completionStatus[id] = done
                 _loadingStatus.remove(id)
             }
+
             loading = false
         }
     }
@@ -69,34 +70,37 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
     private val _completionStatus = mutableStateMapOf<String, Boolean>()
     val completionStatus: Map<String, Boolean> = _completionStatus
 
-    fun updateCompletionStatus(habitId: String) {
+
+    private fun updateCompletionStatus(habitId: String) {
         viewModelScope.launch {
             val done = progressRepo.isHabitCompletedToday(habitId)
             Log.d("UpdateStatus", "Habit $habitId completedToday = $done")
-            _completionStatus[habitId] = done
+            if (done) {
+                _completionStatus[habitId] = done
+
+            } else {
+                updateCompletionStatusRange(habits.find { it.id == habitId } ?: return@launch)
+            }
         }
     }
+
+
+
+    private fun updateCompletionStatusRange(habit: Habit) {
+        viewModelScope.launch {
+            val isCompleted = progressRepo.isHabitCompleted(habit)
+            _completionStatus[habit.id ?: return@launch] = isCompleted
+        }
+    }
+
+
 
     //Para marcar todos los hábitos al inicio
 
     private val _loadingStatus = mutableStateListOf<String>()
     val loadingStatus: List<String> = _loadingStatus
 
-    fun updateAllCompletionStatuses() {
-        viewModelScope.launch {
-            habits.forEach { habit ->
-                val id = habit.id ?: return@forEach
-                _loadingStatus.add(id) // Marca como cargando
 
-                val done = progressRepo.isHabitCompletedToday(id)
-                _completionStatus[id] = done
-
-                _loadingStatus.remove(id) // Ya no está cargando
-
-                Log.d("UpdateStatus", "Habit $id completedToday = $done")
-            }
-        }
-    }
 
 
     //para sincronizar el progreso al cumplir un Hábito
@@ -107,17 +111,13 @@ class HabitsViewModel(private val repo: HabitsRepository = HabitsRepository()) :
     }
 
 
-    fun toggleHabitCompletion(habitId: String) {
+    fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
-            progressRepo.toggleTodayProgress(habitId)
-            updateCompletionStatus(habitId)
+            habit.id?.let { progressRepo.toggleTodayProgress(it) }
+            updateCompletionStatus(habit.id ?: return@launch)
 
         }
     }
-
-
-
-
 
 
 }

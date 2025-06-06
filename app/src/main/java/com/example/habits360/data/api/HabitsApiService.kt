@@ -26,7 +26,7 @@ class HabitsApiService {
     suspend fun getHabits(): List<Habit> = withContext(Dispatchers.IO) {
         val token = getToken() ?: return@withContext emptyList()
         val request = Request.Builder()
-            .url("$baseUrl/habits/user") // ya corregido
+            .url("$baseUrl/habits/user")
             .addHeader("Authorization", "Bearer $token")
             .build()
 
@@ -40,7 +40,7 @@ class HabitsApiService {
         val body = response.body?.string()
         Log.d("HabitsApiService", "DEBUG: Habits API response body => $body")
 
-        // 🛡️ Asegurate de que el body comienza con [ (es un array JSON)
+        // Nos aseguramos de que el body comienza con [ (es un array JSON)
         if (body.isNullOrBlank() || !body.trim().startsWith("[")) {
             Log.w("HabitsApiService", "Response is not a JSON array. Returning empty list.")
             return@withContext emptyList()

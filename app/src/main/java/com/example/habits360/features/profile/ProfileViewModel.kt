@@ -102,7 +102,7 @@ class ProfileViewModel : ViewModel() {
         }
 
         // =======================
-        // 1️⃣ Agua
+        //  Agua
         // =======================
         val liters = weight * 0.033f
         val aguaTitle = "Beber %.2f litros de agua al día".format(liters)
@@ -114,7 +114,7 @@ class ProfileViewModel : ViewModel() {
         createGoalIfNotExists(aguaHabit, "Beber agua diariamente por 7 días")
 
         // =======================
-        // 2️⃣ Dormir
+        //  Dormir
         // =======================
         val baseSleep = when {
             age < 18 -> 8.5f
@@ -132,7 +132,7 @@ class ProfileViewModel : ViewModel() {
         createGoalIfNotExists(sleepHabit, "Dormir bien durante 7 días seguidos")
 
         // =======================
-        // 3️⃣ Personalizado por objetivo
+        //  Personalizado por objetivo
         // =======================
         when (goalType) {
             "ganar_masa" -> {
@@ -214,7 +214,7 @@ class ProfileViewModel : ViewModel() {
 
 
 
-    private val api = ProgressApiService() // Tú lo puedes tener ya definido
+    private val api = ProgressApiService()
 
     var profile by mutableStateOf(UserProfile())
         private set
@@ -230,7 +230,7 @@ class ProfileViewModel : ViewModel() {
                 profile = result
             } else {
                 Log.e("ProfileViewModel", "❌ Error: getProfile() devolvió null")
-                // Puedes también establecer un estado de error o mensaje
+
             }
             isLoading = false
         }

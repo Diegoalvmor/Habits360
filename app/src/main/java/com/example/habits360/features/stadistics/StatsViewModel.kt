@@ -20,11 +20,9 @@ class StatsViewModel: ViewModel() {
 
     private val api = ProgressApiService()
 
-    var categoryLineData by mutableStateOf<List<CategoryProgressDay>>(emptyList())
-        private set
+    private var categoryLineData by mutableStateOf<List<CategoryProgressDay>>(emptyList())
 
-    var progressList by mutableStateOf<List<Progress>>(emptyList())
-        private set
+    private var progressList by mutableStateOf<List<Progress>>(emptyList())
 
 
     fun loadProgressData() {
@@ -101,10 +99,6 @@ class StatsViewModel: ViewModel() {
 
 
 
-
-
-
-
     fun computeCumulativeProgressLine(): List<Entry> {
         val progresses = progressList
             .filter { it.completed }
@@ -133,10 +127,6 @@ class StatsViewModel: ViewModel() {
 
         return entries
     }
-
-
-
-
 
 
 

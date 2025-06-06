@@ -1,6 +1,7 @@
 package com.example.habits360.data.api
 
 import android.util.Log
+import com.example.habits360.features.habits.model.Habit
 import com.example.habits360.features.profile.model.UserProfile
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.CategoryProgressDay
@@ -18,6 +19,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.time.LocalDate
 
 class ProgressApiService {
@@ -27,19 +29,6 @@ class ProgressApiService {
 
     private suspend fun getToken(): String? {
         return FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()?.token
-    }
-
-    suspend fun getProgress(): List<Progress> = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext emptyList()
-        val request = Request.Builder()
-            .url("$baseUrl/progress/user")
-            .addHeader("Authorization", "Bearer $token")
-            .build()
-
-        val response = client.newCall(request).execute()
-        val body = response.body?.string()
-        val type = object : TypeToken<List<Progress>>() {}.type
-        return@withContext gson.fromJson(body, type)
     }
 
     suspend fun getAllProgress(): List<Progress> = withContext(Dispatchers.IO) {
@@ -80,7 +69,7 @@ class ProgressApiService {
         val url = HttpUrl.Builder()
             .scheme("https")
             .host("habits-api-637237112740.europe-southwest1.run.app")
-            .addPathSegments("progress/user")  // <- Endpoint nuevo
+            .addPathSegments("progress/user")
             .addQueryParameter("habitId", habitId)
             .addQueryParameter("date", today)
             .build()
@@ -103,6 +92,44 @@ class ProgressApiService {
 
         return@withContext progresses.any { it.completed }
     }
+
+    suspend fun isHabitCompleted(habit: Habit): Boolean = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext false
+
+        val today = LocalDate.now()
+        val days = when (habit.frequency.lowercase()) {
+            "semanal" -> 7
+            "mensual" -> 30
+            else -> 1 // diario
+        }
+
+        val from = today.minusDays((days - 1).toLong()).toString()
+        val to = today.toString()
+
+        val url = HttpUrl.Builder()
+            .scheme("https")
+            .host("habits-api-637237112740.europe-southwest1.run.app")
+            .addPathSegments("progress/habitsummary")
+            .addQueryParameter("habitId", habit.id ?: return@withContext false)
+            .addQueryParameter("from", from)
+            .addQueryParameter("to", to)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string()
+
+        if (!response.isSuccessful || body.isNullOrBlank()) return@withContext false
+
+        val json = JSONObject(body)
+        return@withContext json.optBoolean("hasProgress", false)
+    }
+
 
 
 

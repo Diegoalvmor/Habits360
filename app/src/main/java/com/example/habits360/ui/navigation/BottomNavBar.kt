@@ -44,9 +44,9 @@ fun BottomNavBar(navController: NavController) {
 }
 
 sealed class BottomNavItem(val route: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String) {
-    object Habits : BottomNavItem("habits", Icons.Default.CheckCircle, "Hábitos")
-    object Goals : BottomNavItem("goals", Icons.Default.FitnessCenter, "Objetivos")
-    object Progress : BottomNavItem("progress", Icons.Default.SelfImprovement, "Informe")
-    object Stats : BottomNavItem("stadistics", Icons.Default.Leaderboard , "Progreso")
-    object Settings : BottomNavItem("settings", Icons.Default.Settings, "Ajustes")
+    data object Habits : BottomNavItem("habits", Icons.Default.CheckCircle, "Hábitos")
+    data object Goals : BottomNavItem("goals", Icons.Default.FitnessCenter, "Objetivos")
+    data object Progress : BottomNavItem("progress", Icons.Default.SelfImprovement, "Informe")
+    data object Stats : BottomNavItem("stadistics", Icons.Default.Leaderboard , "Progreso")
+    data object Settings : BottomNavItem("settings", Icons.Default.Settings, "Ajustes")
 }

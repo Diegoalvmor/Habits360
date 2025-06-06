@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habits360.data.repository.ProgressRepository
-import com.example.habits360.features.profile.model.CalendarDayProgress
 import com.example.habits360.features.progress.model.DayHabitStatus
 import com.example.habits360.features.progress.model.Progress
 import com.example.habits360.features.stadistics.model.DailySummary
@@ -21,30 +20,16 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
     var progress by mutableStateOf<List<Progress>>(emptyList())
         private set
 
-    var loading by mutableStateOf(false)
+    private var loading by mutableStateOf(false)
         private set
 
-    fun loadProgress() {
+    private fun loadProgress() {
         viewModelScope.launch {
             loading = true
             progress = repo.getAllProgress()
             loading = false
         }
     }
-
-    fun addProgress(progress: Progress) {
-        viewModelScope.launch {
-            repo.addProgress(progress)
-            loadProgress()
-        }
-
-    }
-
-    private val _monthProgress = mutableStateOf<List<CalendarDayProgress>>(emptyList())
-    val monthProgress: State<List<CalendarDayProgress>> = _monthProgress
-
-    private val _categoryStats = mutableStateOf<Map<String, Int>>(emptyMap())
-    val categoryStats: State<Map<String, Int>> = _categoryStats
 
 
     private val _dailySummary = mutableStateOf<List<DailySummary>>(emptyList())
@@ -86,10 +71,5 @@ class ProgressViewModel (private val repo: ProgressRepository = ProgressReposito
             _calendarStatus.value = statusList
         }
     }
-
-
-
-
-
 
 }

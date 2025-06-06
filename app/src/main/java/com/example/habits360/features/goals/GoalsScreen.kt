@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -120,7 +119,7 @@ fun GoalsScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "🎯 Objetivos \uD83C\uDFAF",
+                " Objetivos \uD83C\uDFAF",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold
             )
@@ -132,14 +131,14 @@ fun GoalsScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // 🔹 OBJETIVOS ACTIVOS
+        //  OBJETIVOS ACTIVOS
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(currentGoals) { goal ->
                 GoalCard(goal = goal, onDelete = { viewModel.deleteGoal(goal.id ?: "") })
             }
         }
 
-        // 🔹 OBJETIVOS COMPLETADOS
+        //  OBJETIVOS COMPLETADOS
         AnimatedVisibility(visible = showCompleted) {
             Column {
                 Text("🎉 Completados", fontWeight = FontWeight.SemiBold)
@@ -218,7 +217,7 @@ fun GoalsScreen(
             }
         }
 
-        // 🔹 BOTÓN FLIP FORM
+        //  BOTÓN FLIP FORM
         OutlinedButton(
             onClick = { expandedForm = !expandedForm },
             modifier = Modifier.fillMaxWidth()
@@ -233,12 +232,6 @@ fun GoalsScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // 🔹 TEST BUTTON
-        Button(onClick = { obtenerIdToken() }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Default.Security, contentDescription = null)
-            Spacer(Modifier.width(6.dp))
-            Text("Obtener ID Token")
-        }
 
         if (showConfetti) {
             val mediaPlayer = remember { MediaPlayer.create(context, R.raw.goal_completed) }
@@ -380,14 +373,3 @@ fun GoalCard(
 }
 
 
-fun obtenerIdToken() {
-    val user = FirebaseAuth.getInstance().currentUser
-    user?.getIdToken(true)?.addOnCompleteListener { task ->
-        if (task.isSuccessful) {
-            val idToken = task.result?.token
-            Log.d("IDToken", "ID Token: $idToken")
-        } else {
-            Log.e("IDToken", "Error: ${task.exception?.message}")
-        }
-    }
-}

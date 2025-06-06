@@ -150,6 +150,7 @@ fun PantallaLogin() {
             scope.launch {
                 val user = GoogleAuthUIClient.handleSignInResult(result.data)
                 if (user != null) {
+                    userName = "Bienvenido"
                     val repo = FirebaseRepository()
                     val hasProfile = repo.isUserProfileComplete()
                     val destination = if (hasProfile) HomeActivity::class.java else ProfileSetupActivity::class.java
@@ -178,7 +179,7 @@ fun PantallaLogin() {
                 .padding(32.dp)
                 .fillMaxWidth()
         ) {
-            // ✅ LOGO
+            // LOGO
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
@@ -187,15 +188,15 @@ fun PantallaLogin() {
                     .padding(bottom = 8.dp)
             )
 
-            // ✅ SLOGAN
+            // SLOGAN
             Text(
-                text = "Tu guía para una vida saludable 💪",
+                text = "\uD83C\uDFC3\u200D➡\uFE0F  Tu guía para una vida saludable  \uD83C\uDFC3\u200D♀\uFE0F\u200D",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
 
-            // ✅ BOTÓN LOGIN
+            // BOTÓN LOGIN
             Button(
                 onClick = {
                     val signInIntent = GoogleAuthUIClient.getSignInIntent(context)
@@ -215,7 +216,7 @@ fun PantallaLogin() {
                 Text("Iniciar sesión con Google")
             }
 
-            // ✅ MENSAJE DE ERROR (si existe)
+            // Mensaje al iniciar sesión
             if (userName.isNotBlank()) {
                 Text(
                     text = userName,

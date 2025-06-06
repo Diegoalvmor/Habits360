@@ -41,16 +41,6 @@ class GoalsViewModel (private val repo: GoalsRepository = GoalsRepository()) : V
         }
     }
 
-    //Para sincronizar el progreso al cumplir un Hábito
-    fun syncProgressForHabit(habitId: String) {
-        viewModelScope.launch {
-            val updated = repo.updateProgressForHabit(habitId)
-            if (updated) loadGoals()
-        }
-    }
-
-
-
 
     fun celebrateGoal(goal: Goal) {
         viewModelScope.launch {

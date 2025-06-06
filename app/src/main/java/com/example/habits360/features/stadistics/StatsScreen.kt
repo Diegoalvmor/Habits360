@@ -68,7 +68,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                 LineChart(ctx).apply {
                     setTouchEnabled(true)
                     setPinchZoom(true)
-                    axisLeft.axisMinimum = 0f  // Para permitir offset visual
+                    axisLeft.axisMinimum = 0f  // Para no permitir offset visual
                     axisRight.isEnabled = false
                     xAxis.granularity = 1f
                     description.isEnabled = false
@@ -78,7 +78,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                 }
             },
             update = { chart ->
-                // 🎨 Colores bien diferenciados
+                // Colores bien diferenciados
                 val categoryColors = mapOf(
                     "Agua" to Color(0xFF1E88E5),       // Azul fuerte
                     "Dormir" to Color(0xFF8E24AA),     // Púrpura
@@ -86,7 +86,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                     "Ejercicio" to Color(0xFFF4511E)      // Naranja intenso
                 )
 
-                // 🪜 Offset por categoría
+                // Offset por categoría para visualizar correctamente las diferentes líneas
                 val categoryOffset = mapOf(
                     "Agua" to 0f,
                     "Dormir" to 1f,
@@ -131,7 +131,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                         chart.fitScreen() // Restaura el zoom al estado original
                     }
 
-                    // Otros métodos pueden dejarse vacíos si no se utilizan, deben estar
+                    // Otros métodos pueden dejarse vacíos pero necesarios para la importación
                     override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
                     override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
                     override fun onChartLongPressed(me: MotionEvent?) {}
@@ -165,7 +165,7 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel(factory = StatsViewModelFa
                 chart.animateX(600, Easing.EaseInOutQuad)
 
 
-                // Opcional: autoajuste del eje Y superior
+                // autoajuste del eje Y superior
                 val maxY = dataSets.takeIf { it.isNotEmpty() }?.flatMap { dataSet ->
                     (0 until dataSet.entryCount).map { index ->
                         dataSet.getEntryForIndex(index).y

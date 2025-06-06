@@ -30,7 +30,7 @@ class NotificationHelper(private val context: Context) {
             manager.createNotificationChannel(channel)
         }
 
-        // 🔁 PendingIntent para abrir la app al tocar la notificación
+        //  PendingIntent para abrir la app al tocar la notificación
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }

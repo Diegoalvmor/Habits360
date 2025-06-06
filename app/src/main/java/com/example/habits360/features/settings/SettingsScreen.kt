@@ -53,7 +53,7 @@ fun SettingsScreen(
     val profileViewModel: ProfileViewModel = viewModel()
     val profile = profileViewModel.profile
     val isSaving = profileViewModel.isLoading
-    var saveSuccess = profileViewModel.saveSuccessSettings
+    val saveSuccess = profileViewModel.saveSuccessSettings
 
     val scrollState = rememberScrollState()
 

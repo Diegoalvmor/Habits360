@@ -70,7 +70,7 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
     var expandedForm by remember { mutableStateOf(false) }
 
     val colors = MaterialTheme.colorScheme
-    //Para sincronizar las demás pestañas
+    //Para sincronizar las demás pestañas (funciona cuando quiere)
     val syncViewModel: SharedSyncViewModel = viewModel(LocalContext.current as ViewModelStoreOwner)
 
 
@@ -140,7 +140,7 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
                                 isCompleted = isCompleted,
                                 isLoading = isLoadingState,
                                 onToggleComplete = {
-                                    viewModel.toggleHabitCompletion(habit.id ?: "")
+                                    viewModel.toggleHabitCompletion(habit)
                                     syncViewModel.notifyProgressChanged()
                                 },
                                 onDeleteRequest = {
