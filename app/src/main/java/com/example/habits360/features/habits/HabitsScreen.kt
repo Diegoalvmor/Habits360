@@ -210,7 +210,7 @@ fun HabitsScreen(viewModel: HabitsViewModel = viewModel()) {
                             category = it
                         }
                         Spacer(Modifier.width(8.dp))
-                        DropdownMenuBox(frequency, listOf("daily", "weekly")) {
+                        DropdownMenuBox(frequency, listOf("Diario", "Semanal", "Mensual")) {
                             frequency = it
                         }
                     }

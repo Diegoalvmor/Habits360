@@ -1,5 +1,6 @@
 package com.example.habits360.features.settings
 
+import android.annotation.SuppressLint
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.widget.Toast
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
@@ -41,7 +44,7 @@ import com.example.habits360.MainActivity
 import com.example.habits360.features.profile.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-@Composable
+@SuppressLint("DefaultLocale")@Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
     navController: NavController
@@ -52,10 +55,11 @@ fun SettingsScreen(
     val isSaving = profileViewModel.isLoading
     var saveSuccess = profileViewModel.saveSuccessSettings
 
+    val scrollState = rememberScrollState()
+
     LaunchedEffect(Unit) {
         viewModel.loadSettings(context)
         profileViewModel.loadProfile()
-
     }
 
     LaunchedEffect(saveSuccess) {
@@ -70,76 +74,75 @@ fun SettingsScreen(
     val reminderMinute by viewModel.reminderMinute
     val showTimePicker = remember { mutableStateOf(false) }
 
+    // 🔄 Scrollable Column
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(24.dp)
     ) {
         Text("⚙️ Ajustes", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(32.dp))
-        Column {
-            Text("👤 Tu perfil", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = profile.birthdate,
-                onValueChange = { profileViewModel.updateField("birthdate", it) },
-                label = { Text("Fecha de nacimiento (YYYY-MM-DD)") },
-                modifier = Modifier.fillMaxWidth()
-            )
+        Text("👤 Tu perfil", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = profile.birthdate,
+            onValueChange = { profileViewModel.updateField("birthdate", it) },
+            label = { Text("Fecha de nacimiento (YYYY-MM-DD)") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            DropdownSelector(
-                label = "Género",
-                options = listOf("masculino", "femenino", "otro"),
-                selected = profile.gender,
-                onSelected = { profileViewModel.updateField("gender", it) }
+        Spacer(Modifier.height(8.dp))
 
-            )
+        DropdownSelector(
+            label = "Género",
+            options = listOf("masculino", "femenino", "otro"),
+            selected = profile.gender,
+            onSelected = { profileViewModel.updateField("gender", it) }
+        )
 
-            Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(8.dp))
 
-            DropdownSelector(
-                label = "Objetivo",
-                options = listOf("mantener_salud", "ganar_masa", "perder_peso"),
-                selected = profile.goal,
-                onSelected = { profileViewModel.updateField("goal", it) }
-            )
+        DropdownSelector(
+            label = "Objetivo",
+            options = listOf("mantener_salud", "ganar_masa", "perder_peso"),
+            selected = profile.goal,
+            onSelected = { profileViewModel.updateField("goal", it) }
+        )
 
-            Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = if (profile.height == 0) "" else profile.height.toString(),
-                onValueChange = { profileViewModel.updateField("height", it) },
-                label = { Text("Altura (cm)") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+        OutlinedTextField(
+            value = if (profile.height == 0) "" else profile.height.toString(),
+            onValueChange = { profileViewModel.updateField("height", it) },
+            label = { Text("Altura (cm)") },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = if (profile.weight == 0) "" else profile.weight.toString(),
-                onValueChange = { profileViewModel.updateField("weight", it) },
-                label = { Text("Peso (kg)") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+        OutlinedTextField(
+            value = if (profile.weight == 0) "" else profile.weight.toString(),
+            onValueChange = { profileViewModel.updateField("weight", it) },
+            label = { Text("Peso (kg)") },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
-            Button(
-                onClick = { profileViewModel.updateProfile()
-                          },
-                enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("💾 Guardar cambios")
-            }
-
-            Spacer(Modifier.height(24.dp))
+        Button(
+            onClick = { profileViewModel.updateProfile() },
+            enabled = !isSaving,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("💾 Guardar cambios")
         }
+
+        Spacer(Modifier.height(24.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -200,6 +203,7 @@ fun SettingsScreen(
         }
 
         Spacer(Modifier.height(24.dp))
+
         Text("Versión 1.0.0", style = MaterialTheme.typography.labelSmall)
     }
 }

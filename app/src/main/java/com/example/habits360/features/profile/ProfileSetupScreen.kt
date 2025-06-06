@@ -1,22 +1,29 @@
 package com.example.habits360.features.profile
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -29,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.example.habits360.features.profile.model.UserProfile
 import com.example.habits360.home.LoadingActivity
@@ -37,9 +43,13 @@ import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
-fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel(), navController: NavHostController) {
+fun ProfileSetupScreen(
+    viewModel: ProfileViewModel = ProfileViewModel(),
+    navController: NavHostController
+) {
     val context = LocalContext.current
     var weight by remember { mutableStateOf("") }
     var height by remember { mutableStateOf("") }
@@ -48,10 +58,8 @@ fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel(), navCont
     var birthdate by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-
-
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
     if (showDatePicker) {
         ShowDatePickerDialog(
@@ -63,63 +71,87 @@ fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel(), navCont
         )
     }
 
-
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+            .padding(24.dp)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("🧬 Tu Perfil de Bienestar", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "🧬 Tu Perfil de Bienestar",
+                style = typography.headlineMedium,
+                color = colorScheme.onBackground
+            )
 
             OutlinedButton(
                 onClick = { showDatePicker = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = colorScheme.primary
+                )
             ) {
-                Text(if (birthdate.isBlank()) "Selecciona tu fecha de nacimiento" else "Nacimiento: $birthdate")
-            }
-            if (showDatePicker) {
-                ShowDatePickerDialog(
-                    onDateSelected = { date ->
-                        birthdate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        showDatePicker = false
-                    },
-                    onDismiss = { showDatePicker = false }
+                Text(
+                    if (birthdate.isBlank()) "Selecciona tu fecha de nacimiento"
+                    else "Nacimiento: $birthdate"
                 )
             }
-
 
             OutlinedTextField(
                 value = weight,
                 onValueChange = { weight = it },
-                label = { Text("Peso (kg)") },
+                label = { Text("Peso (kg)", color = colorScheme.onSurface) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = typography.bodyLarge,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.outline,
+                    cursorColor = colorScheme.primary
+                )
             )
 
             OutlinedTextField(
                 value = height,
                 onValueChange = { height = it },
-                label = { Text("Altura (cm)") },
+                label = { Text("Altura (cm)", color = colorScheme.onSurface) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = typography.bodyLarge,
+                colors = OutlinedTextFieldDefaults.colors()
             )
 
-            Text("Género")
-            Row {
+            Text("Género", style = typography.titleMedium, color = colorScheme.onBackground)
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 listOf("masculino", "femenino", "otro").forEach {
                     FilterChip(
                         selected = gender == it,
                         onClick = { gender = it },
-                        label = { Text(it.replaceFirstChar { c -> c.uppercase() }) },
-                        modifier = Modifier.padding(end = 8.dp)
+                        label = {
+                            Text(
+                                it.replaceFirstChar { c -> c.uppercase() },
+                                color = if (gender == it) colorScheme.onSecondaryContainer else colorScheme.onSurface
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = colorScheme.secondaryContainer,
+                            containerColor = colorScheme.surfaceVariant
+                        )
                     )
                 }
             }
 
-            Text("Objetivo")
+            Text("Objetivo", style = typography.titleMedium, color = colorScheme.onBackground)
+
             GoalDropdownMenu(goal, onOptionSelected = { goal = it })
 
             Button(
@@ -143,16 +175,19 @@ fun ProfileSetupScreen(viewModel: ProfileViewModel = ProfileViewModel(), navCont
                         putExtra("goal", profile.goal)
                     }
                     context.startActivity(intent)
-
-
                 },
                 enabled = birthdate.isNotBlank() && weight.isNotBlank() && height.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary
+                )
             ) {
-                Text("Guardar perfil")
+                Text("Guardar perfil", style = typography.labelLarge)
             }
         }
     }
+}
 
 
 
@@ -178,7 +213,8 @@ fun GoalDropdownMenu(selectedOption: String, onOptionSelected: (String) -> Unit)
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { label ->
                 DropdownMenuItem(
-                    text = { Text(label.replace("_", " ").capitalize()) },
+                    text = { Text(label.replace("_", " ")
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }) },
                     onClick = {
                         onOptionSelected(label)
                         expanded = false

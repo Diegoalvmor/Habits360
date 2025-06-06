@@ -62,7 +62,7 @@ class ProfileViewModel : ViewModel() {
 
 
 
-        suspend fun createHabitIfNotExists(title: String, description: String, category: String, frequency: String = "daily"): Habit {
+        suspend fun createHabitIfNotExists(title: String, description: String, category: String, frequency: String = "Diario"): Habit {
             return existingHabits.find {
                 it.category == category && it.title.contains(title.substringBefore(" "), ignoreCase = true)
             } ?: run {
@@ -140,7 +140,7 @@ class ProfileViewModel : ViewModel() {
                     title = "Entrenar fuerza 4 veces por semana",
                     description = "Estimula el crecimiento muscular con ejercicios compuestos",
                     category = "Ejercicio",
-                    frequency = "weekly"
+                    frequency = "Semanal"
                 )
                 createGoalIfNotExists(strengthHabit, "Entrenar fuerza 4 veces en una semana")
 
@@ -155,7 +155,7 @@ class ProfileViewModel : ViewModel() {
                     title = "Tomar 1 día de descanso activo",
                     description = "Favorece la recuperación muscular",
                     category = "Recuperación",
-                    frequency = "weekly"
+                    frequency = "Semanal"
                 )
                 createGoalIfNotExists(restHabit, "Realizar descanso activo esta semana")
             }
